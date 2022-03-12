@@ -1,0 +1,13 @@
+fastapi>=0.73
+uvicorn>=0.17.4
+pip-tools>=6.5
+SQLAlchemy>=1.4
+python-dotenv>=0.19.2
+python-jose[cryptography]>=3.3
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.5
+pytest>=7.0.1
+requests>=2.27
+alembic>=1.7.6
+psycopg2-binary>=2.9.3
+aiosqlite>=0.17
