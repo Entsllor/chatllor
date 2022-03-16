@@ -2,11 +2,13 @@ import os
 import time
 
 from jose import jwt
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.core.settings import settings
 from app.crud.base import create, delete, get_one
 from app.schemas.tokens import RefreshToken, AccessToken
+from app.utils.options import GetOneOptions
 
 
 class RefreshTokenCRUD:
@@ -34,8 +36,14 @@ class RefreshTokenCRUD:
     def is_active(token: RefreshToken, user_id: int):
         return token.user_id == user_id and (time.time() < token.expire_at)
 
-    async def get_by_body_and_user_id(self, db, user_id: int, body: str, raise_if_none=True) -> models.RefreshToken:
-        return await get_one(self.model, db, filters={'user_id': user_id, 'body': body}, raise_if_none=raise_if_none)
+    async def get_by_body_and_user_id(
+            self,
+            db: AsyncSession,
+            user_id: int,
+            body: str,
+            options: GetOneOptions = None
+    ) -> models.RefreshToken:
+        return await get_one(self.model, db, filters={'user_id': user_id, 'body': body}, options=options)
 
 
 class AccessTokenCRUD:

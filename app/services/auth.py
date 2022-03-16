@@ -1,11 +1,13 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.crud import Users, AccessTokens, RefreshTokens
 from app.schemas.tokens import AuthTokens
 from app.utils.exceptions import IncorrectLoginOrPassword, InstanceNotFound, InvalidTokenPair, CredentialsException
+from app.utils.options import GetOneOptions
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
@@ -23,11 +25,18 @@ async def create_auth_token_pair(db, user_id: int) -> AuthTokens:
     return AuthTokens(access_token=access_token, refresh_token=refresh_token)
 
 
-async def is_correct_token_pair(db, access_token: str, refresh_token: str) -> int | None:
-    payload = await AccessTokens.get_payload(access_token, options={"verify_exp": False})
-    user_id = int(payload.get("sub"))
+async def is_correct_token_pair(db: AsyncSession, access_token: str, refresh_token: str) -> int | None:
     try:
-        await RefreshTokens.get_by_body_and_user_id(db, user_id=user_id, body=refresh_token, raise_if_none=True)
+        payload = await AccessTokens.get_payload(access_token, options={"verify_exp": False})
+        user_id = int(payload.get("sub"))
+        refresh_token = await RefreshTokens.get_by_body_and_user_id(
+            db,
+            user_id=user_id,
+            body=refresh_token,
+            options=GetOneOptions(raise_if_none=True)
+        )
+        if not RefreshTokens.is_active(refresh_token, user_id):
+            raise JWTError
     except (JWTError, InstanceNotFound):
         return None
     return user_id
@@ -45,10 +54,10 @@ async def get_user_by_access_token(db, token_body=Depends(oauth2_scheme), only_a
     try:
         payload = await AccessTokens.get_payload(token_body)
         user_id = payload.get("sub")
-        filters = dict(id=user_id)
+        filters = {'id': user_id}
         if only_active:
             filters["is_active"] = True
-        user = await Users.get_by_id(db, raise_if_none=True, user_id=user_id)
+        user = await Users.get_by_id(db, user_id=user_id, options=GetOneOptions(raise_if_none=True))
     except (JWTError, InstanceNotFound):
         raise CredentialsException
     return user
