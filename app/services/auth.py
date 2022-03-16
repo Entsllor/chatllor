@@ -11,7 +11,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
 async def authorize_by_username_and_password(db, username: str, password: str) -> models.User:
-    user = await Users.get_one(db, username=username)
+    user = await Users.get_by_username(db, username=username)
     if not user or not await Users.do_password_match(user, password):
         raise IncorrectLoginOrPassword
     return user
@@ -27,7 +27,7 @@ async def is_correct_token_pair(db, access_token: str, refresh_token: str) -> in
     payload = await AccessTokens.get_payload(access_token, options={"verify_exp": False})
     user_id = int(payload.get("sub"))
     try:
-        await RefreshTokens.get_one(db, user_id=user_id, body=refresh_token, raise_if_none=True)
+        await RefreshTokens.get_by_body_and_user_id(db, user_id=user_id, body=refresh_token, raise_if_none=True)
     except (JWTError, InstanceNotFound):
         return None
     return user_id
@@ -48,7 +48,7 @@ async def get_user_by_access_token(db, token_body=Depends(oauth2_scheme), only_a
         filters = dict(id=user_id)
         if only_active:
             filters["is_active"] = True
-        user = await Users.get_one(db, raise_if_none=True, **filters)
+        user = await Users.get_by_id(db, raise_if_none=True, user_id=user_id)
     except (JWTError, InstanceNotFound):
         raise CredentialsException
     return user
