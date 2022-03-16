@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
-from app.repos.base import BaseAsyncCrudRepo
+from app.crud.base import BaseAsyncCRUD
 from app.utils.passwords import get_password_hash, verify_password
 
 
-class UserRepo(BaseAsyncCrudRepo):
+class UserRepo(BaseAsyncCRUD):
     model = models.User
 
     async def create(self, db: AsyncSession, username, password, email) -> models.User:

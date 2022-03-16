@@ -5,11 +5,11 @@ from jose import jwt
 
 from app import models
 from app.core.settings import settings
-from app.repos.base import BaseAsyncCrudRepo
+from app.crud.base import BaseAsyncCRUD
 from app.schemas.tokens import RefreshToken, AccessToken
 
 
-class RefreshTokenRepo(BaseAsyncCrudRepo):
+class RefreshTokenCRUD(BaseAsyncCRUD):
     model = models.RefreshToken
 
     @staticmethod
@@ -21,7 +21,7 @@ class RefreshTokenRepo(BaseAsyncCrudRepo):
         if expire_delta is None:
             expire_delta = settings.REFRESH_TOKEN_EXPIRE_SECONDS
         expire_at = time.time() + expire_delta
-        db_token = await super(RefreshTokenRepo, self).create(
+        db_token = await super(RefreshTokenCRUD, self).create(
             db=db,
             user_id=user_id,
             expire_at=expire_at,
@@ -34,7 +34,7 @@ class RefreshTokenRepo(BaseAsyncCrudRepo):
         return token.user_id == user_id and (time.time() < token.expire_at)
 
 
-class AccessTokenRepo:
+class AccessTokenCRUD:
     @staticmethod
     async def _create(data: dict = None, expire_delta: int = None):
         if not isinstance(data, dict):
@@ -59,5 +59,5 @@ class AccessTokenRepo:
         return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM], options=options)
 
 
-AccessTokens = AccessTokenRepo()
-RefreshTokens = RefreshTokenRepo()
+AccessTokens = AccessTokenCRUD()
+RefreshTokens = RefreshTokenCRUD()

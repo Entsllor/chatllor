@@ -4,11 +4,7 @@ from app.core.database import Base
 from app.utils.exceptions import ExpectedOneInstance, InstanceNotFound
 
 
-class BaseAsyncDbRepo:
-    pass
-
-
-class BaseAsyncCrudRepo(BaseAsyncDbRepo):
+class BaseAsyncCRUD:
     model: Base
 
     async def get_many(self, db, _limit: int = None, _offset: int = None, **filter_by) -> list:

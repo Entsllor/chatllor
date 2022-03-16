@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlalchemy.exc import IntegrityError
 
-from app.repos import Users
+from app.crud import Users
 from app.schemas.users import UserPrivate, UserCreate, UserPublic, User
 from app.utils.dependencies import get_current_active_user, get_db
 

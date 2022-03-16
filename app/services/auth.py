@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 
 from app import models
-from app.repos import Users, AccessTokens, RefreshTokens
+from app.crud import Users, AccessTokens, RefreshTokens
 from app.schemas.tokens import AuthTokens
 from app.utils.exceptions import IncorrectLoginOrPassword, InstanceNotFound, InvalidTokenPair, CredentialsException
 
