@@ -54,10 +54,9 @@ async def get_user_by_access_token(db, token_body=Depends(oauth2_scheme), only_a
     try:
         payload = await AccessTokens.get_payload(token_body)
         user_id = payload.get("sub")
-        filters = {'id': user_id}
-        if only_active:
-            filters["is_active"] = True
         user = await Users.get_by_id(db, user_id=user_id, options=GetOneOptions(raise_if_none=True))
+        if only_active and not user.is_active:
+            raise InstanceNotFound
     except (JWTError, InstanceNotFound):
         raise CredentialsException
     return user

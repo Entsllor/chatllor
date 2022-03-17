@@ -4,11 +4,10 @@ import pytest
 from fastapi import status
 from pydantic import ValidationError
 
+from app.crud import Users, RefreshTokens, AccessTokens
+from app.schemas.tokens import AuthTokensOut
+from app.tests import paths
 from app.tests.conftest import DEFAULT_USER_PASS, DEFAULT_USER_EMAIL, DEFAULT_USER_NAME, USER_CREATE_DATA
-from . import paths
-from .. import crud, models
-from ..crud import Users, RefreshTokens, AccessTokens
-from ..schemas.tokens import AuthTokensOut
 
 
 @pytest.mark.asyncio
@@ -96,11 +95,7 @@ async def test_login_with_refresh_token(client, token_pair):
 
 @pytest.mark.asyncio
 async def test_failed_refreshing_token_if_refresh_token_expired(db, client, token_pair, default_user):
-    await crud.update(
-        models.RefreshToken, db,
-        new_values={"expire_at": time.time() - 10},
-        filters={"body": token_pair.refresh_token}
-    )
+    await RefreshTokens.change_expire_term(db, default_user.id, token_pair.refresh_token, time.time() - 100)
     response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 

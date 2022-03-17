@@ -24,4 +24,4 @@ async def read_user_me(user: User = Depends(get_current_active_user)):
 
 @router.get("/", response_model=list[UserPublic])
 async def read_users():
-    return await Users.get_many()
+    return await Users.get_many_by_query()

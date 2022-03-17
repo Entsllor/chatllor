@@ -1,7 +1,8 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
-from app.crud.base import create, get_one
+from app.crud.base import create_instance, get_one_by_query
 from app.utils.options import GetOneOptions
 from app.utils.passwords import get_password_hash, verify_password
 
@@ -11,7 +12,8 @@ class UserRepo:
 
     async def create(self, db: AsyncSession, *, username: str, password: str, email: str) -> models.User:
         hashed_password = get_password_hash(password)
-        return await create(self.model, db, username=username, hashed_password=hashed_password, email=email)
+        user = self.model(username=username, hashed_password=hashed_password, email=email)
+        return await create_instance(db, user)
 
     @staticmethod
     async def do_password_match(user: models.User, plain_password: str) -> bool:
@@ -19,23 +21,22 @@ class UserRepo:
 
     async def get_by_username(
             self, db: AsyncSession, username: str, options: GetOneOptions | dict = None) -> models.User:
-        return await get_one(self.model, db, filters={'username': username}, options=options)
+        q = select(self.model).where(self.model.username == username)
+        return await get_one_by_query(db, q, options=options)
 
     async def get_by_email(
             self, db: AsyncSession, email: str, options: GetOneOptions | dict = None) -> models.User:
-        return await get_one(self.model, db, filters={'email': email}, options=options)
+        q = select(self.model).where(self.model.email == email)
+        return await get_one_by_query(db, q, options=options)
 
     async def get_by_id(
             self,
             db: AsyncSession,
             user_id: int,
-            is_active=None,
             options: GetOneOptions = None
     ) -> models.User:
-        filters = {'id': user_id}
-        if is_active is not None:
-            filters["is_active"] = is_active
-        return await get_one(self.model, db, filters=filters, options=options)
+        q = select(self.model).where(self.model.id == user_id)
+        return await get_one_by_query(db, q, options=options)
 
 
 Users = UserRepo()

@@ -2,11 +2,12 @@ import os
 import time
 
 from jose import jwt
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.core.settings import settings
-from app.crud.base import create, delete, get_one
+from app.crud.base import update_by_query, create_instance, delete_by_query, get_one_by_query
 from app.schemas.tokens import RefreshToken, AccessToken
 from app.utils.options import GetOneOptions
 
@@ -19,17 +20,12 @@ class RefreshTokenCRUD:
         return os.urandom(63).hex()
 
     async def create(self, db, user_id, expire_delta: int = None) -> RefreshToken:
-        await delete(self.model, db, filters={'user_id': user_id})
+        await delete_by_query(db, delete(self.model).where(self.model.user_id == user_id))
         if expire_delta is None:
             expire_delta = settings.REFRESH_TOKEN_EXPIRE_SECONDS
         expire_at = time.time() + expire_delta
-        db_token = await create(
-            model=self.model,
-            db=db,
-            user_id=user_id,
-            expire_at=expire_at,
-            body=await self.create_body()
-        )
+        refresh_token = self.model(user_id=user_id, expire_at=expire_at, body=await self.create_body())
+        db_token = await create_instance(db, refresh_token)
         return RefreshToken.from_orm(db_token)
 
     @staticmethod
@@ -43,7 +39,14 @@ class RefreshTokenCRUD:
             body: str,
             options: GetOneOptions = None
     ) -> models.RefreshToken:
-        return await get_one(self.model, db, filters={'user_id': user_id, 'body': body}, options=options)
+        q = select(self.model).where(self.model.user_id == user_id, self.model.body == body)
+        return await get_one_by_query(db, q, options=options)
+
+    async def change_expire_term(self, db, user_id: int, token_body: str, expire_at: int):
+        q = update(self.model). \
+            where(self.model.user_id == user_id, self.model.body == token_body). \
+            values(expire_at=expire_at)
+        return await update_by_query(db, q)
 
 
 class AccessTokenCRUD:
