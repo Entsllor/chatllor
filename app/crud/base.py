@@ -65,6 +65,14 @@ async def update_by_query(db: AsyncSession, q: Query):
     await db.execute(q)
 
 
+async def update_instance(db: AsyncSession, instance, **values):
+    for key, value in values.items():
+        setattr(instance, key, value)
+    await db.flush(objects=[instance])
+    await db.refresh(instance)
+    return instance
+
+
 async def create_instance(db: AsyncSession, instance):
     db.add(instance)
     await db.flush()
