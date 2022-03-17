@@ -1,9 +1,30 @@
+from sqlalchemy import select, update, insert, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Query
 
 from app.core.database import Base
 from app.utils.exceptions import ExpectedOneInstance, InstanceNotFound
 from app.utils.options import GetManyOptions, GetOneOptions
+
+
+class BaseCrudDB:
+    model: Base
+
+    @property
+    def _select(self) -> Query:
+        return select(self.model)
+
+    @property
+    def _update(self) -> Query:
+        return update(self.model)
+
+    @property
+    def _insert(self) -> Query:
+        return insert(self.model)
+
+    @property
+    def _delete(self) -> Query:
+        return delete(self.model)
 
 
 async def get_many_by_query(db, q: Query, options: GetManyOptions | dict = None) -> list:
