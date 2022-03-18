@@ -1,3 +1,5 @@
+import time
+
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -10,3 +12,7 @@ class RefreshToken(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", backref="refresh_tokens")
     expire_at = Column(Integer, index=True)  # Unix time
+
+    @property
+    def is_active(self):
+        return time.time() < self.expire_at

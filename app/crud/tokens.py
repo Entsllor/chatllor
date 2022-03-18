@@ -27,10 +27,6 @@ class RefreshTokenCRUD(BaseCrudDB):
         db_token = await create_instance(db, refresh_token)
         return RefreshToken.from_orm(db_token)
 
-    @staticmethod
-    def is_active(token: RefreshToken, user_id: int):
-        return token.user_id == user_id and (time.time() < token.expire_at)
-
     async def get_by_body_and_user_id(
             self,
             db: AsyncSession,

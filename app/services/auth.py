@@ -35,7 +35,7 @@ async def is_correct_token_pair(db: AsyncSession, access_token: str, refresh_tok
             body=refresh_token,
             options=GetOneOptions(raise_if_none=True)
         )
-        if not RefreshTokens.is_active(refresh_token, user_id):
+        if not refresh_token.is_active:
             raise JWTError
     except (JWTError, InstanceNotFound):
         return None
