@@ -1,22 +1,23 @@
 import asyncio
+import os
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncConnection
 
+os.environ.setdefault("APP_MODE", "test")
 from app import models
 from app.core.database import create_db_engine, Base
 from app.core.settings import settings
 from app.crud import Users
 from app.main import app
-from app.schemas.tokens import AuthTokensOut
-from app.schemas.users import UserCreate
+from app.schemas import users, tokens
 from app.utils.dependencies import get_db
 
 DEFAULT_USER_PASS = "SomeUserPassword"
 DEFAULT_USER_EMAIL = "defaultUser@example.com"
 DEFAULT_USER_NAME = "SomeUserName"
-USER_CREATE_DATA = UserCreate(username=DEFAULT_USER_NAME, password=DEFAULT_USER_PASS, email=DEFAULT_USER_EMAIL)
+USER_CREATE_DATA = users.UserCreate(username=DEFAULT_USER_NAME, password=DEFAULT_USER_PASS, email=DEFAULT_USER_EMAIL)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -58,10 +59,10 @@ async def default_user(db) -> models.User:
 
 
 @pytest.fixture(scope="function")
-async def token_pair(default_user, client) -> AuthTokensOut:
+async def token_pair(default_user, client) -> tokens.AuthTokensOut:
     response = client.post(
         "/token/",
         data={'username': default_user.username, 'password': DEFAULT_USER_PASS},
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
-    yield AuthTokensOut(**response.json())
+    yield tokens.AuthTokensOut(**response.json())

@@ -1,6 +1,7 @@
 from passlib.context import CryptContext
+from app.core.settings import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=settings.HASHING_SCHEMAS, deprecated="auto")
 
 
 def verify_password(plain_password, hashed_password) -> bool:

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pydantic import BaseSettings
@@ -15,6 +16,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_SECONDS: int = 60 * 20
     REFRESH_TOKEN_EXPIRE_SECONDS: int = 60 * 60 * 24 * 30
+    HASHING_SCHEMAS: list = ["bcrypt"]
 
     class Config:
         case_sensitive = True
@@ -22,4 +24,13 @@ class Settings(BaseSettings):
         env_prefix = "APP_"
 
 
-settings = Settings()
+class TestSettings(Settings):
+    HASHING_SCHEMAS: list = ["md5_crypt"]
+
+
+APP_MODE = os.getenv("APP_MODE", "dev").lower()
+
+if "test" in APP_MODE:
+    settings = TestSettings()
+else:
+    settings = Settings()
