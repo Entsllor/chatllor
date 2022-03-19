@@ -1,7 +1,6 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.crud import Users, AccessTokens, RefreshTokens
@@ -25,21 +24,16 @@ async def create_auth_token_pair(db, user_id: int) -> tuple[models.AccessToken, 
     return access_token, refresh_token
 
 
-async def validate_auth_tokens(db: AsyncSession, access_token_body: str, refresh_token_body: str) -> int:
+async def revoke_tokens(
+        db, access_token_body: str, refresh_token_body: str) -> tuple[models.AccessToken, models.RefreshToken]:
     try:
         access_token = models.AccessToken(body=access_token_body)
-        access_token.validate()
+        access_token.validate(verify_exp=False)
         user_id = access_token.user_id
         await RefreshTokens.get_valid_token(db, user_id=user_id, body=refresh_token_body)
     except (JWTError, InstanceNotFound):
         raise InvalidAuthTokens
-    return user_id
-
-
-async def revoke_tokens(
-        db, access_token_body: str, refresh_token_body: str) -> tuple[models.AccessToken, models.RefreshToken]:
-    authorized_user_id = await validate_auth_tokens(db, access_token_body, refresh_token_body)
-    return await create_auth_token_pair(db, authorized_user_id)
+    return await create_auth_token_pair(db, user_id)
 
 
 async def get_user_by_access_token(db, token_body=Depends(oauth2_scheme), only_active=True) -> models.User:

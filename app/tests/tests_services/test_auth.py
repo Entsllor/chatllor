@@ -1,8 +1,10 @@
 import pytest
 
 from app import crud, models
+from app.crud import RefreshTokens, AccessTokens
 from app.crud.base import update_instance
-from app.services.auth import get_user_by_access_token
+from app.services.auth import get_user_by_access_token, revoke_tokens, authorize_by_username_and_password
+from app.tests.conftest import DEFAULT_USER_PASS
 from app.utils import exceptions
 
 
@@ -42,3 +44,73 @@ async def test_failed_get_user_by_access_token_if_user_is_not_active(db, default
     with pytest.raises(exceptions.HTTPException) as exc:
         await get_user_by_access_token(db, token_body=token_pair.access_token)
     assert exc.value is exceptions.InActiveUser
+
+
+@pytest.mark.asyncio
+async def test_revoke_tokens(db, default_user):
+    refresh_token = await RefreshTokens.create(db, user_id=default_user.id)
+    access_token = await AccessTokens.create(user_id=default_user.id)
+    new_access_token, new_refresh_token = await revoke_tokens(
+        db, access_token_body=access_token.body, refresh_token_body=refresh_token.body)
+    assert isinstance(new_access_token, models.AccessToken)
+    assert isinstance(new_refresh_token, models.RefreshToken)
+    assert refresh_token.body != new_refresh_token.body
+    assert access_token.body != new_access_token.body
+
+
+@pytest.mark.asyncio
+async def test_revoke_tokens_with_expired_access_token(db, default_user):
+    refresh_token = await RefreshTokens.create(db, user_id=default_user.id)
+    access_token = await AccessTokens.create(user_id=default_user.id, expire_delta=-100)
+    new_access_token, new_refresh_token = await revoke_tokens(
+        db, access_token_body=access_token.body, refresh_token_body=refresh_token.body)
+    assert refresh_token.body != new_refresh_token.body
+    assert access_token.body != new_access_token.body
+
+
+@pytest.mark.asyncio
+async def test_failed_revoke_tokens_invalid_refresh_token(db, default_user):
+    refresh_token = await RefreshTokens.create(db, user_id=default_user.id)
+    access_token = await AccessTokens.create(user_id=default_user.id)
+    with pytest.raises(exceptions.HTTPException) as exc:
+        await revoke_tokens(db, access_token_body=access_token.body, refresh_token_body=refresh_token.body + "_invalid")
+    assert exc.value is exceptions.InvalidAuthTokens
+
+
+@pytest.mark.asyncio
+async def test_failed_revoke_tokens_expired_refresh_token(db, default_user):
+    refresh_token = await RefreshTokens.create(db, user_id=default_user.id, expire_delta=-100)
+    access_token = await AccessTokens.create(user_id=default_user.id)
+    with pytest.raises(exceptions.HTTPException) as exc:
+        await revoke_tokens(db, access_token_body=access_token.body, refresh_token_body=refresh_token.body)
+    assert exc.value is exceptions.InvalidAuthTokens
+
+
+@pytest.mark.asyncio
+async def test_failed_revoke_tokens_invalid_access_token(db, default_user):
+    refresh_token = await RefreshTokens.create(db, user_id=default_user.id)
+    access_token = await AccessTokens.create(user_id=default_user.id)
+    with pytest.raises(exceptions.HTTPException) as exc:
+        await revoke_tokens(db, access_token_body=access_token.body + "_invalid", refresh_token_body=refresh_token.body)
+    assert exc.value is exceptions.InvalidAuthTokens
+
+
+@pytest.mark.asyncio
+async def test_authorize_by_username_and_password(db, default_user):
+    user = await authorize_by_username_and_password(db, default_user.username, DEFAULT_USER_PASS)
+    assert isinstance(user, models.User)
+    assert user.id == default_user.id
+
+
+@pytest.mark.asyncio
+async def test_failed_authorize_by_username_and_password_with_incorrect_password(db, default_user):
+    with pytest.raises(exceptions.HTTPException) as exc:
+        await authorize_by_username_and_password(db, default_user.username, DEFAULT_USER_PASS + "_invalid")
+    assert exc.value is exceptions.IncorrectLoginOrPassword
+
+
+@pytest.mark.asyncio
+async def test_failed_authorize_by_username_and_password_with_incorrect_username(db, default_user):
+    with pytest.raises(exceptions.HTTPException) as exc:
+        await authorize_by_username_and_password(db, "another" + default_user.username, DEFAULT_USER_PASS)
+    assert exc.value is exceptions.IncorrectLoginOrPassword
