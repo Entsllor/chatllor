@@ -6,9 +6,10 @@ IncorrectLoginOrPassword = HTTPException(
     headers={"WWW-Authenticate": "Bearer"}
 )
 
-InvalidTokenPair = HTTPException(
+InvalidAuthTokens = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Expected an active refresh token and an expired access token related to this user"
+    detail="Expected an active refresh token and an access token with valid signature (allow expired)",
+    headers={"WWW-Authenticate": "Bearer"}
 )
 
 ExpectedActiveAccessToken = HTTPException(
@@ -20,6 +21,18 @@ ExpectedActiveAccessToken = HTTPException(
 CredentialsException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+InActiveUser = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Current user is inactive",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+UserNotFoundError = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Failed to find this User",
     headers={"WWW-Authenticate": "Bearer"},
 )
 

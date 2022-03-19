@@ -25,7 +25,7 @@ async def test_failed_get_user_by_access_token_if_user_not_exist(db, token_pair,
     await db.delete(default_user)
     with pytest.raises(exceptions.HTTPException) as exc:
         await get_user_by_access_token(db, token_pair.access_token)
-    assert exc.value is exceptions.CredentialsException
+    assert exc.value is exceptions.UserNotFoundError
 
 
 @pytest.mark.asyncio
@@ -41,4 +41,4 @@ async def test_failed_get_user_by_access_token_if_user_is_not_active(db, default
     await update_instance(db, default_user, is_active=False)
     with pytest.raises(exceptions.HTTPException) as exc:
         await get_user_by_access_token(db, token_body=token_pair.access_token)
-    assert exc.value is exceptions.CredentialsException
+    assert exc.value is exceptions.InActiveUser

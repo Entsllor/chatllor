@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.crud import Users, AccessTokens, RefreshTokens
-from app.schemas.tokens import AuthTokens
-from app.utils.exceptions import IncorrectLoginOrPassword, InstanceNotFound, InvalidTokenPair, CredentialsException
+from app.utils.exceptions import IncorrectLoginOrPassword, InstanceNotFound, InvalidAuthTokens, CredentialsException, \
+    InActiveUser, UserNotFoundError
 from app.utils.options import GetOneOptions
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
@@ -14,49 +14,44 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 async def authorize_by_username_and_password(db, username: str, password: str) -> models.User:
     user = await Users.get_by_username(db, username=username)
-    if not user or not await Users.do_password_match(user, password):
+    if not user or not user.password_match(plain_password=password):
         raise IncorrectLoginOrPassword
     return user
 
 
-async def create_auth_token_pair(db, user_id: int) -> AuthTokens:
+async def create_auth_token_pair(db, user_id: int) -> tuple[models.AccessToken, models.RefreshToken]:
     access_token = await AccessTokens.create(user_id)
     refresh_token = await RefreshTokens.create(db, user_id)
-    return AuthTokens(access_token=access_token, refresh_token=refresh_token)
+    return access_token, refresh_token
 
 
-async def is_correct_token_pair(db: AsyncSession, access_token: str, refresh_token: str) -> int | None:
+async def validate_auth_tokens(db: AsyncSession, access_token_body: str, refresh_token_body: str) -> int:
     try:
-        payload = await AccessTokens.get_payload(access_token, options={"verify_exp": False})
-        user_id = int(payload.get("sub"))
-        refresh_token = await RefreshTokens.get_by_body_and_user_id(
-            db,
-            user_id=user_id,
-            body=refresh_token,
-            options=GetOneOptions(raise_if_none=True)
-        )
-        if not refresh_token.is_active:
-            raise JWTError
+        access_token = models.AccessToken(body=access_token_body)
+        access_token.validate()
+        user_id = access_token.user_id
+        await RefreshTokens.get_valid_token(db, user_id=user_id, body=refresh_token_body)
     except (JWTError, InstanceNotFound):
-        return None
+        raise InvalidAuthTokens
     return user_id
 
 
-async def authorize_by_refresh_token(db, access_token: str, refresh_token: str) -> AuthTokens:
-    authorized_user_id = await is_correct_token_pair(db, access_token, refresh_token)
-    if authorized_user_id:
-        return await create_auth_token_pair(db, authorized_user_id)
-    else:
-        raise InvalidTokenPair
+async def authorize_by_refresh_token(
+        db, access_token_body: str, refresh_token_body: str) -> tuple[models.AccessToken, models.RefreshToken]:
+    authorized_user_id = await validate_auth_tokens(db, access_token_body, refresh_token_body)
+    return await create_auth_token_pair(db, authorized_user_id)
 
 
-async def get_user_by_access_token(db, token_body=Depends(oauth2_scheme), only_active=True) -> models.User | None:
+async def get_user_by_access_token(db, token_body=Depends(oauth2_scheme), only_active=True) -> models.User:
     try:
-        payload = await AccessTokens.get_payload(token_body)
-        user_id = payload.get("sub")
+        access_token = models.AccessToken(body=token_body)
+        access_token.validate()
+        user_id = access_token.user_id
         user = await Users.get_by_id(db, user_id=user_id, options=GetOneOptions(raise_if_none=True))
         if only_active and not user.is_active:
-            raise InstanceNotFound
-    except (JWTError, InstanceNotFound):
+            raise InActiveUser
+    except JWTError:
         raise CredentialsException
+    except InstanceNotFound:
+        raise UserNotFoundError
     return user

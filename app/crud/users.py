@@ -14,10 +14,6 @@ class UserRepo(BaseCrudDB):
         user = self.model(username=username, hashed_password=hashed_password, email=email)
         return await create_instance(db, user)
 
-    @staticmethod
-    async def do_password_match(user: models.User, plain_password: str) -> bool:
-        return verify_password(plain_password, user.hashed_password)
-
     async def get_by_username(
             self, db: AsyncSession, username: str, options: GetOneOptions | dict = None) -> models.User:
         q = self._select.where(self.model.username == username)

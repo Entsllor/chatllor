@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, Text, String, DateTime, func, Boolean
 
 from app.core.database import Base
+from app.utils.passwords import verify_password
 
 
 class User(Base):
@@ -11,3 +12,6 @@ class User(Base):
     created_at = Column(DateTime, index=True, server_default=func.now())
     is_active = Column(Boolean, default=True)
     email = Column(String(length=255))
+
+    def password_match(self, plain_password: str) -> bool:
+        return verify_password(plain_password=plain_password, hashed_password=self.hashed_password)
