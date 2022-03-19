@@ -39,7 +39,7 @@ class RefreshTokenCRUD(BaseCrudDB):
         q = self._select.where(
             self.model.user_id == user_id,
             self.model.body == body,
-            self.model.expire_at >= int(time.time())
+            self.model.expire_at >= time.time()
         )
         return await get_one_by_query(db, q, options=GetOneOptions(raise_if_none=True))
 
@@ -59,7 +59,7 @@ class AccessTokenCRUD:
             data = data.copy()
         if expire_delta is None:
             expire_delta = settings.REFRESH_TOKEN_EXPIRE_SECONDS
-        expire_at = int(time.time() + expire_delta)
+        expire_at = time.time() + expire_delta
         data["exp"] = expire_at
         body = jwt.encode(data, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
         return models.AccessToken(body=body)

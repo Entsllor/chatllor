@@ -65,8 +65,8 @@ class AccessToken(NamedTuple):
         return int(self.sub)
 
     @property
-    def expire_at(self) -> int:
-        return int(self.payload.get("exp"))
+    def expire_at(self) -> float:
+        return self.payload.get("exp")
 
     @property
     def is_active(self):

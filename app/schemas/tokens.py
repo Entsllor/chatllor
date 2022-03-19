@@ -29,5 +29,5 @@ class AuthTokensBodies(BaseModel):
 
 
 class AuthTokensOut(AuthTokensBodies):
-    access_token_expire_at: int
-    refresh_token_expire_at: int
+    access_token_expire_at: float
+    refresh_token_expire_at: float

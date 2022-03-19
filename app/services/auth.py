@@ -36,7 +36,7 @@ async def validate_auth_tokens(db: AsyncSession, access_token_body: str, refresh
     return user_id
 
 
-async def authorize_by_refresh_token(
+async def revoke_tokens(
         db, access_token_body: str, refresh_token_body: str) -> tuple[models.AccessToken, models.RefreshToken]:
     authorized_user_id = await validate_auth_tokens(db, access_token_body, refresh_token_body)
     return await create_auth_token_pair(db, authorized_user_id)
