@@ -3,11 +3,12 @@ from fastapi import FastAPI
 
 from app.core.database import Base, engine
 from app.core.settings import settings
-from app.routers import users, auth
+from app.routers import users, auth, messages
 
 app = FastAPI()
 app.include_router(users.router)
 app.include_router(auth.router)
+app.include_router(messages.router)
 
 
 @app.on_event("startup")

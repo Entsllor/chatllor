@@ -10,4 +10,4 @@ class Message(Base):
     user_id = Column(Integer, ForeignKey('user.id'))
     body = Column(Text, default="")
     created_at = Column(DateTime, index=True, server_default=func.now())
-    user = relationship("User", back_populates="messages")
+    user = relationship("User", backref="messages")

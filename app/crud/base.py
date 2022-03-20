@@ -1,4 +1,6 @@
-from sqlalchemy import select, update, insert, delete
+from typing import Iterable
+
+from sqlalchemy import select, update, insert, delete, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Query
 
@@ -27,6 +29,15 @@ class BaseCrudDB:
         return delete(self.model)
 
 
+def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
+    for ordering_field in ordering_fields:
+        if ordering_field.startswith("-"):
+            query = query.order_by(text(f'{ordering_field[1:]} desc'))
+        else:
+            query = query.order_by(text(f"{ordering_field} asc"))
+    return query
+
+
 async def get_many_by_query(db, q: Query, options: GetManyOptions | dict = None) -> list:
     if isinstance(options, dict):
         options = GetManyOptions(**options)
@@ -36,6 +47,8 @@ async def get_many_by_query(db, q: Query, options: GetManyOptions | dict = None)
         q = q.limit(options.limit)
     if options.offset is not None:
         q = q.offset(options.offset)
+    if options.ordering_fields:
+        q = order_by_fields(q, options.ordering_fields)
     result = await db.execute(q)
     return result.scalars().all()
 

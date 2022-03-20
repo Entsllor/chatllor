@@ -33,4 +33,4 @@ class PaginationOptions(BaseOptions):
 
 @dataclass(slots=True, kw_only=True)
 class GetManyOptions(PaginationOptions):
-    pass
+    ordering_fields: Iterable[str] = tuple()
