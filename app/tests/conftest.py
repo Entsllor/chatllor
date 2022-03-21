@@ -9,7 +9,7 @@ os.environ.setdefault("APP_MODE", "test")
 from app import models
 from app.core.database import create_db_engine, Base
 from app.core.settings import settings
-from app.crud import Users
+from app.crud import Users, Chats
 from app.main import app
 from app.schemas import users, tokens
 from app.utils.dependencies import get_db
@@ -56,6 +56,11 @@ async def client(db) -> TestClient:
 @pytest.fixture(scope="function")
 async def default_user(db) -> models.User:
     yield await Users.create(db, **USER_CREATE_DATA.dict())
+
+
+@pytest.fixture(scope="function")
+async def chat(db) -> models.Chat:
+    yield await Chats.create(db, name="test_chat_can_be_created")
 
 
 @pytest.fixture(scope="function")
