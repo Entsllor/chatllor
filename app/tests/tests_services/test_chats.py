@@ -1,7 +1,7 @@
 import pytest
 
 from app import models
-from app.crud import ChatUsers, Chats
+from app.crud import ChatUsers, Chats, Users
 from app.services import chats
 from app.utils import exceptions
 from app.utils.options import GetOneOptions
@@ -33,3 +33,18 @@ async def test_failed_user_delete_a_chat_user_not_a_chat_user(db, default_user):
     with pytest.raises(exceptions.HTTPException) as exc:
         await chats.user_delete_a_chat(db, user_id=default_user.id, chat_id=chat.id)
     assert exc.value is exceptions.Forbidden
+
+
+@pytest.mark.asyncio
+async def test_user_can_join_the_chat(db, chat):
+    new_user = await Users.create(db, username="new_user", password="pass", email="new_user@mail.com")
+    await chats.add_user_to_chat(db, new_user.id, chat_id=chat.id)
+    assert (await ChatUsers.get_one(db, user_id=new_user.id, chat_id=chat.id)).user_id == new_user.id
+
+
+@pytest.mark.asyncio
+async def test_user_can_left_the_chat(db, default_user, chat):
+    new_user = await Users.create(db, username="new_user", password="pass", email="new_user@mail.com")
+    await chats.add_user_to_chat(db, user_id=new_user.id, chat_id=chat.id)
+    await chats.remove_user_from_chat(db, user_id=new_user.id, chat_id=chat.id)
+    assert not await ChatUsers.get_one(db, user_id=new_user.id, chat_id=chat.id)

@@ -27,3 +27,11 @@ async def user_delete_a_chat(db: AsyncSession, user_id: int, chat_id: int) -> No
         await ChatUsers.delete(db, chat_id=chat_user.chat_id)
     else:
         raise exceptions.Forbidden
+
+
+async def add_user_to_chat(db: AsyncSession, user_id: int, chat_id: int) -> None:
+    await ChatUsers.create(db, user_id=user_id, chat_id=chat_id)
+
+
+async def remove_user_from_chat(db: AsyncSession, user_id: int, chat_id: int) -> None:
+    await ChatUsers.delete(db, user_id=user_id, chat_id=chat_id)
