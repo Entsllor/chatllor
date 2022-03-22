@@ -28,6 +28,14 @@ class BaseCrudDB:
     def _delete(self) -> Query:
         return delete(self.model)
 
+    async def get_one(self, db: AsyncSession, _options: GetOneOptions = None, **filters):
+        query = self._select.filter_by(**filters)
+        return await get_one_by_query(db, query, options=_options)
+
+    async def get_many(self, db: AsyncSession, _options: GetManyOptions = None, **filters):
+        query = self._select.filter_by(**filters)
+        return await get_many_by_query(db, query, options=_options)
+
 
 def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
     for ordering_field in ordering_fields:

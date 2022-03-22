@@ -28,17 +28,18 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-async def db_connection(event_loop) -> AsyncConnection:
+async def db_engine(event_loop) -> AsyncConnection:
     engine = create_db_engine(settings.TEST_DB_URL)
     async with engine.connect() as conn:
         await conn.run_sync(Base.metadata.create_all)
         yield conn
+        await conn.run_sync(Base.metadata.drop_all)
     engine.dispose()
 
 
 @pytest.fixture(scope="function")
-async def db(db_connection) -> AsyncSession:
-    session = AsyncSession(bind=db_connection)
+async def db(db_engine) -> AsyncSession:
+    session = AsyncSession(bind=db_engine)
     try:
         yield session
     finally:

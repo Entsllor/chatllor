@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, func, DateTime
+from sqlalchemy import Column, Integer, func, DateTime, ForeignKey
 
 from app.core.database import Base
 
@@ -6,6 +6,6 @@ from app.core.database import Base
 class ChatUser(Base):
     __tablename__ = 'chat_user'
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, index=True)
-    chat_id = Column(Integer, index=True)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"), index=True, nullable=False)
+    chat_id = Column(Integer, ForeignKey("chat.id", ondelete="CASCADE", onupdate="CASCADE"), index=True, nullable=False)
     joined_at = Column(DateTime, server_default=func.now())

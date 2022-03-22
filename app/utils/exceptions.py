@@ -36,6 +36,12 @@ UserNotFoundError = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
+Forbidden = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="Sorry, but you do not have enough rights",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
 
 class ExpectedOneInstance(Exception):
     pass
