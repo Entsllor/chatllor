@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, Text, String, DateTime, func, Boolean
+from datetime import datetime
+
+from sqlalchemy import Column, Integer, Text, String, DateTime, Boolean
 
 from app.core.database import Base
 from app.utils.passwords import verify_password
@@ -9,7 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(Text, index=True, unique=True)
     hashed_password = Column(String(length=255))
-    created_at = Column(DateTime, index=True, server_default=func.now())
+    created_at = Column(DateTime, index=True, default=datetime.now)
     is_active = Column(Boolean, default=True)
     email = Column(String(length=255))
 

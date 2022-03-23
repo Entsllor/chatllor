@@ -12,7 +12,7 @@ async def test_chat_can_be_created(db):
 
 
 @pytest.mark.asyncio
-async def test_chat_can_be_deleted(db, chat):
-    assert isinstance(await db.get(models.Chat, chat.id), models.Chat)
-    await Chats.delete(db, chat.id)
-    assert await db.get(models.Chat, chat.id) is None
+async def test_chat_can_be_deleted(db, empty_chat):
+    assert isinstance(await db.get(models.Chat, empty_chat.id), models.Chat)
+    await Chats.delete(db, empty_chat.id)
+    assert await db.get(models.Chat, empty_chat.id) is None
