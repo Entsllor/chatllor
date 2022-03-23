@@ -6,8 +6,7 @@ from ..utils.options import GetManyOptions
 class MessagesCrud(BaseCrudDB):
     model = models.Message
 
-    async def create(self, db, user_id: int, body: str, chat_id: int = None) -> models.Message:
-        # TODO make chat_id required
+    async def create(self, db, user_id: int, body: str, chat_id: int) -> models.Message:
         message = self.model(user_id=user_id, body=body, chat_id=chat_id)
         return await create_instance(db, message)
 
