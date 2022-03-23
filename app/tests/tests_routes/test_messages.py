@@ -2,15 +2,10 @@ import pytest
 
 from app import schemas
 from .. import paths
+from ..conftest import token_auth
 from ...crud import Messages
 from ...services import chats
 
-
-def token_auth(access_token_body: str) -> dict:
-    return {"Authorization": f"Bearer {access_token_body}"}
-
-
-AUTH_BEARER = "Authorization: Bearer {}"
 MESSAGE_CREATE_DATA = schemas.messages.MessageCreate(body="__MESSAGE_TEXT__")
 
 

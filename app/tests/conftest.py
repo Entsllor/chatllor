@@ -17,6 +17,7 @@ from app.utils.dependencies import get_db
 DEFAULT_USER_PASS = "SomeUserPassword"
 DEFAULT_USER_EMAIL = "defaultUser@example.com"
 DEFAULT_USER_NAME = "SomeUserName"
+AUTH_BEARER = "Authorization: Bearer {}"
 USER_CREATE_DATA = users.UserCreate(username=DEFAULT_USER_NAME, password=DEFAULT_USER_PASS, email=DEFAULT_USER_EMAIL)
 
 
@@ -83,3 +84,7 @@ async def token_pair(default_user, client) -> tokens.AuthTokensOut:
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
     yield tokens.AuthTokensOut(**response.json())
+
+
+def token_auth(access_token_body: str) -> dict:
+    return {"Authorization": f"Bearer {access_token_body}"}
