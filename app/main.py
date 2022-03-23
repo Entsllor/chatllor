@@ -1,11 +1,12 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
 from app.core.database import Base, engine
 from app.core.settings import settings
 from app.routers import users, auth, messages, chats
+from app.utils.dependencies import get_db
 
-app = FastAPI()
+app = FastAPI(dependencies=[Depends(get_db)])
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(messages.router)

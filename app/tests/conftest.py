@@ -1,5 +1,6 @@
 import asyncio
 import os
+from asyncio import AbstractEventLoop
 
 import pytest
 from fastapi.testclient import TestClient
@@ -7,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, AsyncConnection
 
 os.environ.setdefault("APP_MODE", "test")
 from app import models
-from app.core.database import create_db_engine, Base
+from app.core.database import create_db_engine, Base, db_context
 from app.core.settings import settings
 from app.crud import Users, Chats, ChatUsers
 from app.main import app
@@ -39,13 +40,15 @@ async def db_engine(event_loop) -> AsyncConnection:
 
 
 @pytest.fixture(scope="function")
-async def db(db_engine) -> AsyncSession:
+def db(db_engine, event_loop: AbstractEventLoop) -> AsyncSession:
     session = AsyncSession(bind=db_engine)
     try:
+        db_context.set(session)
         yield session
     finally:
-        await session.rollback()
-        await session.close()
+        db_context.set(None)
+        event_loop.run_until_complete(session.rollback())
+        event_loop.run_until_complete(session.close())
 
 
 @pytest.fixture(scope="function")
@@ -57,22 +60,22 @@ async def client(db) -> TestClient:
 
 @pytest.fixture(scope="function")
 async def default_user(db) -> models.User:
-    yield await Users.create(db, **USER_CREATE_DATA.dict())
+    yield await Users.create(**USER_CREATE_DATA.dict())
 
 
 @pytest.fixture(scope="function")
 async def second_user(db) -> models.User:
-    yield await Users.create(db, **USER_CREATE_DATA.dict() | {'username': "Luidji", 'email': "luidji@example.com"})
+    yield await Users.create(**USER_CREATE_DATA.dict() | {'username': "Luidji", 'email': "luidji@example.com"})
 
 
 @pytest.fixture(scope="function")
 async def empty_chat(db) -> models.Chat:
-    yield await Chats.create(db, name="test_chat_can_be_created")
+    yield await Chats.create(name="test_chat_can_be_created")
 
 
 @pytest.fixture(scope="function")
-async def chat_with_default_user(db, empty_chat, default_user) -> models.Chat:
-    await ChatUsers.create(db, user_id=default_user.id, chat_id=empty_chat.id)
+async def chat_with_default_user(empty_chat, default_user) -> models.Chat:
+    await ChatUsers.create(user_id=default_user.id, chat_id=empty_chat.id)
     yield empty_chat  # now not empty
 
 

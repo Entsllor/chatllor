@@ -3,15 +3,15 @@ from sqlalchemy.exc import IntegrityError
 
 from app.crud import Users
 from app.schemas.users import UserPrivate, UserCreate, UserPublic, User
-from app.utils.dependencies import get_current_active_user, get_db
+from app.utils.dependencies import get_current_active_user
 
 router = APIRouter(prefix="/users")
 
 
 @router.post("/", response_model=UserPrivate, status_code=status.HTTP_201_CREATED)
-async def create_user(user: UserCreate, db=Depends(get_db)):
+async def create_user(user: UserCreate):
     try:
-        created = await Users.create(db, **user.dict())
+        created = await Users.create(**user.dict())
     except IntegrityError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"This username '{user.username}' is already taken.")
     return created

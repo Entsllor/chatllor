@@ -1,10 +1,9 @@
 from typing import Iterable
 
 from sqlalchemy import select, update, insert, delete, text
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Query
 
-from app.core.database import Base
+from app.core.database import Base, get_session
 from app.utils.exceptions import ExpectedOneInstance, InstanceNotFound
 from app.utils.options import GetManyOptions, GetOneOptions
 
@@ -28,13 +27,13 @@ class BaseCrudDB:
     def _delete(self) -> Query:
         return delete(self.model)
 
-    async def get_one(self, db: AsyncSession, _options: GetOneOptions = None, **filters):
+    async def get_one(self, _options: GetOneOptions = None, **filters):
         query = self._select.filter_by(**filters)
-        return await get_one_by_query(db, query, options=_options)
+        return await get_one_by_query(query, options=_options)
 
-    async def get_many(self, db: AsyncSession, _options: GetManyOptions = None, **filters):
+    async def get_many(self, _options: GetManyOptions = None, **filters):
         query = self._select.filter_by(**filters)
-        return await get_many_by_query(db, query, options=_options)
+        return await get_many_by_query(query, options=_options)
 
 
 def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
@@ -46,7 +45,7 @@ def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
     return query
 
 
-async def get_many_by_query(db, q: Query, options: GetManyOptions | dict = None) -> list:
+async def get_many_by_query(q: Query, options: GetManyOptions | dict = None) -> list:
     if isinstance(options, dict):
         options = GetManyOptions(**options)
     elif options is None:
@@ -57,17 +56,17 @@ async def get_many_by_query(db, q: Query, options: GetManyOptions | dict = None)
         q = q.offset(options.offset)
     if options.ordering_fields:
         q = order_by_fields(q, options.ordering_fields)
-    result = await db.execute(q)
+    result = await get_session().execute(q)
     return result.scalars().all()
 
 
-async def get_one_by_query(db, q: Query, options: GetOneOptions | dict = None) -> Base:
+async def get_one_by_query(q: Query, options: GetOneOptions | dict = None) -> Base:
     if isinstance(options, dict):
         options = GetOneOptions(**options)
     elif options is None:
         options = GetOneOptions()
     limit = 2 if options.raise_if_many else 1
-    instances = await get_many_by_query(db, q=q, options=GetManyOptions(limit=limit))
+    instances = await get_many_by_query(q=q, options=GetManyOptions(limit=limit))
     if options.raise_if_many and len(instances) > 2:
         raise ExpectedOneInstance
     if not instances:
@@ -77,25 +76,25 @@ async def get_one_by_query(db, q: Query, options: GetOneOptions | dict = None) -
     return instances[0]
 
 
-async def delete_by_query(db: AsyncSession, q: Query):
-    return await db.execute(q)
+async def delete_by_query(q: Query):
+    return await get_session().execute(q)
 
 
-async def update_by_query(db: AsyncSession, q: Query):
+async def update_by_query(q: Query):
     q.execution_options(synchronize_session="fetch")
-    await db.execute(q)
+    await get_session().execute(q)
 
 
-async def update_instance(db: AsyncSession, instance, **values):
+async def update_instance(instance, **values):
     for key, value in values.items():
         setattr(instance, key, value)
-    await db.flush(objects=[instance])
-    await db.refresh(instance)
+    await get_session().flush(objects=[instance])
+    await get_session().refresh(instance)
     return instance
 
 
-async def create_instance(db: AsyncSession, instance):
-    db.add(instance)
-    await db.flush()
-    await db.refresh(instance)
+async def create_instance(instance):
+    get_session().add(instance)
+    await get_session().flush()
+    await get_session().refresh(instance)
     return instance

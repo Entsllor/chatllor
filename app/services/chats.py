@@ -7,29 +7,28 @@
 — etc.
 This module does NOT describe such logic as sending/deleting messages or post creating.
 """
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.crud import ChatUsers, Chats
 from app.utils import exceptions
 
 
-async def user_create_a_chat(db: AsyncSession, user_id: int, chat_name: str) -> models.Chat:
-    chat = await Chats.create(db, name=chat_name)
-    await ChatUsers.create(db, user_id=user_id, chat_id=chat.id)
+async def user_create_a_chat(user_id: int, chat_name: str) -> models.Chat:
+    chat = await Chats.create(name=chat_name)
+    await ChatUsers.create(user_id=user_id, chat_id=chat.id)
     return chat
 
 
-async def user_delete_a_chat(db: AsyncSession, user_id: int, chat_id: int) -> None:
-    chat_user = await ChatUsers.get_one(db, user_id=user_id, chat_id=chat_id)
+async def user_delete_a_chat(user_id: int, chat_id: int) -> None:
+    chat_user = await ChatUsers.get_one(user_id=user_id, chat_id=chat_id)
     if not chat_user:
         raise exceptions.Forbidden
-    await Chats.delete(db, chat_id=chat_user.chat_id)
+    await Chats.delete(chat_id=chat_user.chat_id)
 
 
-async def add_user_to_chat(db: AsyncSession, user_id: int, chat_id: int) -> None:
-    await ChatUsers.create(db, user_id=user_id, chat_id=chat_id)
+async def add_user_to_chat(user_id: int, chat_id: int) -> None:
+    await ChatUsers.create(user_id=user_id, chat_id=chat_id)
 
 
-async def remove_user_from_chat(db: AsyncSession, user_id: int, chat_id: int) -> None:
-    await ChatUsers.delete(db, user_id=user_id, chat_id=chat_id)
+async def remove_user_from_chat(user_id: int, chat_id: int) -> None:
+    await ChatUsers.delete(user_id=user_id, chat_id=chat_id)

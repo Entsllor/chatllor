@@ -30,7 +30,7 @@ async def test_failed_send_message_user_does_not_exist(db, default_user, token_p
     assert response.status_code == 401
 
 
-def test_failed_send_message_user_not_in_chat(db, default_user, token_pair, client, empty_chat):
+def test_failed_send_message_user_not_in_chat(default_user, token_pair, client, empty_chat):
     response = client.post(
         paths.MESSAGES.format(chat_id=empty_chat.id),
         headers=token_auth(token_pair.access_token),
@@ -40,16 +40,16 @@ def test_failed_send_message_user_not_in_chat(db, default_user, token_pair, clie
 
 
 @pytest.mark.asyncio
-async def test_read_messages(db, client, token_pair, chat_with_default_user, second_user, default_user):
-    await chats.add_user_to_chat(db, second_user.id, chat_with_default_user.id)
-    await Messages.create(db, default_user.id, "__test_read_messages_1", chat_id=chat_with_default_user.id)
-    await Messages.create(db, second_user.id, "__test_read_messages_2", chat_id=chat_with_default_user.id)
+async def test_read_messages(client, token_pair, chat_with_default_user, second_user, default_user):
+    await chats.add_user_to_chat(second_user.id, chat_with_default_user.id)
+    await Messages.create(default_user.id, "__test_read_messages_1", chat_id=chat_with_default_user.id)
+    await Messages.create(second_user.id, "__test_read_messages_2", chat_id=chat_with_default_user.id)
     response = client.get(
         url=paths.MESSAGES.format(chat_id=chat_with_default_user.id),
         headers=token_auth(token_pair.access_token)
     )
     db_messages = [schemas.messages.MessageOut.from_orm(msg)
-                   for msg in await Messages.get_all(db, chat_id=chat_with_default_user.id)]
+                   for msg in await Messages.get_all(chat_id=chat_with_default_user.id)]
     assert response.status_code == 200
     assert len(db_messages) == 2
     assert response.json() == db_messages
