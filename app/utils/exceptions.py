@@ -1,56 +1,75 @@
 from fastapi import HTTPException, status
 
-IncorrectLoginOrPassword = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Incorrect username or password",
-    headers={"WWW-Authenticate": "Bearer"}
-)
 
-InvalidAuthTokens = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Expected an active refresh token and an access token with valid signature (allow expired)",
-    headers={"WWW-Authenticate": "Bearer"}
-)
-
-ExpectedActiveAccessToken = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Expected an active access token",
-    headers={"WWW-Authenticate": "Bearer"},
-)
-
-CredentialsException = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Could not validate credentials",
-    headers={"WWW-Authenticate": "Bearer"},
-)
-
-InActiveUser = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Current user is inactive",
-    headers={"WWW-Authenticate": "Bearer"},
-)
-
-UserNotFoundError = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Failed to find this User",
-    headers={"WWW-Authenticate": "Bearer"},
-)
-
-Forbidden = HTTPException(
-    status_code=status.HTTP_403_FORBIDDEN,
-    detail="Sorry, but you do not have enough rights",
-    headers={"WWW-Authenticate": "Bearer"},
-)
-
-ObjectNotFound = HTTPException(
-    status_code=status.HTTP_404_NOT_FOUND,
-    detail="Failed to find this object"
-)
+class BaseAppException(Exception):
+    as_http: HTTPException
 
 
-class ExpectedOneInstance(Exception):
-    pass
+class IncorrectLoginOrPassword(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect username or password",
+        headers={"WWW-Authenticate": "Bearer"}
+    )
 
 
-class InstanceNotFound(Exception):
-    pass
+class InvalidAuthTokens(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Expected an active refresh token and an access token with valid signature (allow expired)",
+        headers={"WWW-Authenticate": "Bearer"}
+    )
+
+
+class ExpectedActiveAccessToken(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Expected an active access token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+class CredentialsException(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+class InActiveUser(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Current user is inactive",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+class UserNotFoundError(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Failed to find this User",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+class Forbidden(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Sorry, but you do not have enough rights",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+class ExpectedOneInstance(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail="There are duplicates that cannot be processed"
+    )
+
+
+class InstanceNotFound(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Failed to find this object"
+    )

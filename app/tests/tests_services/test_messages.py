@@ -39,12 +39,11 @@ async def test_user_can_delete_self_message_from_chat(chat_with_default_user, de
 async def test_failed_delete_foreign_message(chat_with_default_user, second_user, default_user):
     await chats.add_user_to_chat(user_id=second_user.id, chat_id=chat_with_default_user.id)
     message = await Messages.create(user_id=default_user.id, chat_id=chat_with_default_user.id, body="_DELETE_THIS")
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(exceptions.Forbidden):
         await messages.delete_message_from_chat(
             user_id=second_user.id,
             message_id=message.id,
         )
-    assert exc.value is exceptions.Forbidden
 
 
 @pytest.mark.asyncio

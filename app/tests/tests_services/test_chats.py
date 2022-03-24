@@ -25,9 +25,8 @@ async def test_user_delete_a_chat(default_user, chat_with_default_user):
 @pytest.mark.asyncio
 async def test_failed_user_delete_a_chat_user_not_a_chat_user(default_user):
     chat = await Chats.create("_test_failed_user_delete_a_chat_user_not_a_chat_user")
-    with pytest.raises(exceptions.HTTPException) as exc:
+    with pytest.raises(exceptions.Forbidden):
         await chats.user_delete_a_chat(user_id=default_user.id, chat_id=chat.id)
-    assert exc.value is exceptions.Forbidden
 
 
 @pytest.mark.asyncio

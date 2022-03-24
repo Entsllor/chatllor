@@ -13,7 +13,7 @@ async def send_message_to_chat(user_id: int, chat_id: int, text: str) -> models.
 async def delete_message_from_chat(user_id: int, message_id: int) -> models.Message:
     message = await crud.Messages.get_one(id=message_id)
     if not message:
-        raise exceptions.ObjectNotFound
+        raise exceptions.InstanceNotFound
     chat_user = await crud.ChatUsers.get_one(user_id=user_id, chat_id=message.chat_id)
     if (not chat_user) or (chat_user.user_id != message.user_id):
         raise exceptions.Forbidden
