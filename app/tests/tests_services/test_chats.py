@@ -1,7 +1,7 @@
 import pytest
 
 from app import models
-from app.crud import ChatUsers, Chats, Users
+from app.crud import ChatUsers, Chats
 from app.services import chats
 from app.utils import exceptions
 from app.utils.options import GetOneOptions
@@ -30,15 +30,12 @@ async def test_failed_user_delete_a_chat_user_not_a_chat_user(default_user):
 
 
 @pytest.mark.asyncio
-async def test_user_can_join_the_chat(empty_chat):
-    new_user = await Users.create(username="new_user", password="pass", email="new_user@mail.com")
-    await chats.add_user_to_chat(new_user.id, chat_id=empty_chat.id)
-    assert (await ChatUsers.get_one(user_id=new_user.id, chat_id=empty_chat.id)).user_id == new_user.id
+async def test_user_can_join_the_chat(empty_chat, default_user):
+    await chats.add_user_to_chat(default_user.id, chat_id=empty_chat.id)
+    assert (await ChatUsers.get_one(user_id=default_user.id, chat_id=empty_chat.id)).user_id == default_user.id
 
 
 @pytest.mark.asyncio
-async def test_user_can_left_the_chat(default_user, empty_chat):
-    new_user = await Users.create(username="new_user", password="pass", email="new_user@mail.com")
-    await chats.add_user_to_chat(user_id=new_user.id, chat_id=empty_chat.id)
-    await chats.remove_user_from_chat(user_id=new_user.id, chat_id=empty_chat.id)
-    assert not await ChatUsers.get_one(user_id=new_user.id, chat_id=empty_chat.id)
+async def test_user_can_leave_the_chat(default_user, chat_with_default_user):
+    await chats.remove_user_from_chat(user_id=default_user.id, chat_id=chat_with_default_user.id)
+    assert not await ChatUsers.get_one(user_id=default_user.id, chat_id=chat_with_default_user.id)

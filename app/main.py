@@ -4,7 +4,7 @@ from fastapi.exception_handlers import http_exception_handler
 
 from app.core.database import Base, engine
 from app.core.settings import settings
-from app.routers import users, auth, messages, chats
+from app.routers import users, auth, messages, chats, chat_users
 from app.utils import exceptions
 from app.utils.dependencies import get_db
 
@@ -13,6 +13,7 @@ app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(messages.router)
 app.include_router(chats.router)
+app.include_router(chat_users.router)
 
 
 @app.on_event("startup")
