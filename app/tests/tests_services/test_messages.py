@@ -1,5 +1,4 @@
 import pytest
-from fastapi import HTTPException
 
 from app import models
 from app.crud import Messages
