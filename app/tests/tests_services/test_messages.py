@@ -1,7 +1,10 @@
 import pytest
+from fastapi import HTTPException
 
 from app import models
+from app.crud import Messages
 from app.services import messages, chats
+from app.utils import exceptions
 
 
 @pytest.mark.asyncio
@@ -15,6 +18,33 @@ async def test_user_send_message_to_chat(chat_with_default_user, default_user):
     assert message.body == "msg_1"
     assert message.user_id == default_user.id
     assert message.chat_id == chat_with_default_user.id
+
+
+@pytest.mark.asyncio
+async def test_user_can_delete_self_message_from_chat(chat_with_default_user, default_user):
+    message = await messages.send_message_to_chat(
+        user_id=default_user.id,
+        chat_id=chat_with_default_user.id,
+        text="msg_1"
+    )
+    assert await Messages.get_all() == [message]
+    await messages.delete_message_from_chat(
+        user_id=default_user.id,
+        message_id=message.id,
+    )
+    assert await Messages.get_all() == []
+
+
+@pytest.mark.asyncio
+async def test_failed_delete_foreign_message(chat_with_default_user, second_user, default_user):
+    await chats.add_user_to_chat(user_id=second_user.id, chat_id=chat_with_default_user.id)
+    message = await Messages.create(user_id=default_user.id, chat_id=chat_with_default_user.id, body="_DELETE_THIS")
+    with pytest.raises(HTTPException) as exc:
+        await messages.delete_message_from_chat(
+            user_id=second_user.id,
+            message_id=message.id,
+        )
+    assert exc.value is exceptions.Forbidden
 
 
 @pytest.mark.asyncio

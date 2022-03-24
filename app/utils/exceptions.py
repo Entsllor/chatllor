@@ -42,6 +42,11 @@ Forbidden = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
+ObjectNotFound = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="Failed to find this object"
+)
+
 
 class ExpectedOneInstance(Exception):
     pass

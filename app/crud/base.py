@@ -35,6 +35,10 @@ class BaseCrudDB:
         query = self._select.filter_by(**filters)
         return await get_many_by_query(query, options=_options)
 
+    async def delete(self, **filters) -> None:
+        query = self._delete.filter_by(**filters)
+        return await delete_by_query(query)
+
 
 def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
     for ordering_field in ordering_fields:
