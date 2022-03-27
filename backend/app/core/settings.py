@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     TEST_DB_URL: str = "sqlite+aiosqlite:///test_db.sqlite3"
     JWT_ALGORITHM: str = "HS256"
     SECRET_KEY: str
+    ALLOWED_ORIGINS: list = ["https://localhost:3000", "http://localhost:3000"]
     ACCESS_TOKEN_EXPIRE_SECONDS: int = 60 * 20
     REFRESH_TOKEN_EXPIRE_SECONDS: int = 60 * 60 * 24 * 30
     HASHING_SCHEMAS: list = ["bcrypt"]
