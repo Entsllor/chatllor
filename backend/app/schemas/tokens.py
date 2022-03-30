@@ -22,12 +22,10 @@ class AuthTokens(BaseModel):
     refresh_token: RefreshToken
 
 
-class AuthTokensBodies(BaseModel):
+class AccessTokenOut(BaseModel):
     access_token: str
-    refresh_token: str
     token_type: str = "bearer"
 
 
-class AuthTokensOut(AuthTokensBodies):
-    access_token_expire_at: float
-    refresh_token_expire_at: float
+class AuthTokensBodies(AccessTokenOut):
+    refresh_token: str

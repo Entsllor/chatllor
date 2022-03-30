@@ -10,7 +10,7 @@ os.environ.setdefault("APP_MODE", "test")
 from app import models
 from app.core.database import create_db_engine, Base, db_context
 from app.core.settings import settings
-from app.crud import Users, Chats, ChatUsers
+from app.crud import Users, Chats, ChatUsers, AccessTokens, RefreshTokens
 from app.main import app
 from app.schemas import users, tokens
 from app.utils.dependencies import get_db
@@ -80,13 +80,10 @@ async def chat_with_default_user(empty_chat, default_user) -> models.Chat:
 
 
 @pytest.fixture(scope="function")
-async def token_pair(default_user, client) -> tokens.AuthTokensOut:
-    response = client.post(
-        "/token/",
-        data={'username': default_user.username, 'password': DEFAULT_USER_PASS},
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    yield tokens.AuthTokensOut(**response.json())
+async def token_pair(default_user, client) -> tokens.AuthTokensBodies:
+    access_token = await AccessTokens.create(user_id=default_user.id)
+    refresh_token = await RefreshTokens.create(user_id=default_user.id)
+    yield tokens.AuthTokensBodies(access_token=access_token.body, refresh_token=refresh_token.body)
 
 
 def token_auth(access_token_body: str) -> dict:

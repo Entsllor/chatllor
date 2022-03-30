@@ -1,33 +1,61 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, Cookie
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.schemas.tokens import AuthTokensBodies, AuthTokensOut
-from app.services.auth import authorize_by_username_and_password, revoke_tokens, create_auth_token_pair
+from app.core.settings import settings
+from app.schemas.tokens import AccessTokenOut
+from app.services import auth
+from app.utils import exceptions
 
-router = APIRouter(prefix="/token")
+router = APIRouter()
+LOGIN_URL = "/token/"
+REVOKE_REFRESH_TOKEN_URL = "/token/refresh/"
 
 
-@router.post("/", response_model=AuthTokensOut)
-async def login_by_password(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authorize_by_username_and_password(form_data.username, form_data.password)
-    access_token, refresh_token = await create_auth_token_pair(user.id)
-    return AuthTokensOut(
+@router.post(LOGIN_URL, response_model=AccessTokenOut)
+async def login_by_password(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await auth.authorize_by_username_and_password(form_data.username, form_data.password)
+    access_token, refresh_token = await auth.create_auth_token_pair(user.id)
+    response.set_cookie(
+        key="access_token",
+        value=access_token.body,
+        httponly=True,
+        expires=settings.ACCESS_TOKEN_EXPIRE_SECONDS,
+        path=REVOKE_REFRESH_TOKEN_URL
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token.body,
+        httponly=True,
+        expires=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
+        path=REVOKE_REFRESH_TOKEN_URL
+    )
+    return AccessTokenOut(
         access_token=access_token.body,
-        refresh_token=refresh_token.body,
-        access_token_expire_at=access_token.expire_at,
-        refresh_token_expire_at=refresh_token.expire_at
     )
 
 
-@router.post("/refresh", response_model=AuthTokensOut)
-async def login_by_refresh_token(auth_tokens: AuthTokensBodies):
-    access_token, refresh_token = await revoke_tokens(
-        access_token_body=auth_tokens.access_token,
-        refresh_token_body=auth_tokens.refresh_token
+@router.post(REVOKE_REFRESH_TOKEN_URL, response_model=AccessTokenOut)
+async def revoke_token(response: Response, access_token: str = Cookie(None), refresh_token: str = Cookie(None)):
+    if not access_token or not refresh_token:
+        raise exceptions.InvalidAuthTokens
+    access_token, refresh_token = await auth.revoke_tokens(
+        access_token_body=access_token,
+        refresh_token_body=refresh_token
     )
-    return AuthTokensOut(
+    response.set_cookie(
+        key="access_token",
+        value=access_token.body,
+        httponly=True,
+        expires=settings.ACCESS_TOKEN_EXPIRE_SECONDS,
+        path=REVOKE_REFRESH_TOKEN_URL
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token.body,
+        httponly=True,
+        expires=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
+        path=REVOKE_REFRESH_TOKEN_URL
+    )
+    return AccessTokenOut(
         access_token=access_token.body,
-        refresh_token=refresh_token.body,
-        access_token_expire_at=access_token.expire_at,
-        refresh_token_expire_at=refresh_token.expire_at
     )

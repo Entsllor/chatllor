@@ -5,7 +5,7 @@ from fastapi import status
 from pydantic import ValidationError
 
 from app.crud import Users, RefreshTokens, AccessTokens
-from app.schemas.tokens import AuthTokensOut
+from app.schemas.tokens import AccessTokenOut
 from app.tests import paths
 from app.tests.conftest import DEFAULT_USER_PASS, DEFAULT_USER_EMAIL, DEFAULT_USER_NAME, USER_CREATE_DATA
 
@@ -59,7 +59,7 @@ async def test_login(default_user, client):
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
     assert response.ok
-    assert AuthTokensOut(**response.json())  # validate response content
+    assert AccessTokenOut(**response.json())  # validate response content
 
 
 @pytest.mark.asyncio
@@ -71,7 +71,7 @@ async def test_failed_login_wrong_password(default_user, client):
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     with pytest.raises(ValidationError):
-        assert AuthTokensOut(**response.json())  # validate response content
+        assert AccessTokenOut(**response.json())  # validate response content
 
 
 @pytest.mark.asyncio
@@ -83,27 +83,27 @@ async def test_failed_login_user_does_not_exist(default_user, client):
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     with pytest.raises(ValidationError):
-        assert AuthTokensOut(**response.json())  # validate response content
+        assert AccessTokenOut(**response.json())  # validate response content
 
 
 @pytest.mark.asyncio
 async def test_login_with_refresh_token(client, token_pair):
-    response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict())
+    response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict(), cookies=token_pair.dict())
     assert response.ok
-    assert AuthTokensOut(**response.json())
+    assert AccessTokenOut(**response.json())
 
 
 @pytest.mark.asyncio
 async def test_failed_refreshing_token_if_refresh_token_expired(client, token_pair, default_user):
     await RefreshTokens.change_expire_term(default_user.id, token_pair.refresh_token, time.time() - 100)
-    response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict())
+    response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict(), cookies=token_pair.dict())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.asyncio
 async def test_failed_refreshing_token_if_invalid_access_token(client, token_pair):
     token_pair.access_token = token_pair.access_token + "_invalid"
-    response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict())
+    response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict(), cookies=token_pair.dict())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -112,7 +112,7 @@ async def test_failed_refreshing_token_if_access_token_belongs_to_another_user(c
     another_user = await Users.create(username="ANOTHER_USER", password="Another_Password", email="another@email")
     another_access_token = await RefreshTokens.create(user_id=another_user.id)
     token_pair.access_token = another_access_token.body
-    response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict())
+    response = client.post(paths.REFRESH_TOKEN, json=token_pair.dict(), cookies=token_pair.dict())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
