@@ -1,3 +1,4 @@
+import itertools
 from typing import Iterable
 
 from sqlalchemy import select, update, insert, delete, text
@@ -5,6 +6,7 @@ from sqlalchemy.orm import Query
 
 from app.core.database import Base, get_session
 from app.utils.exceptions import ExpectedOneInstance, InstanceNotFound
+from app.utils.filtering import set_filters
 from app.utils.options import GetManyOptions, GetOneOptions
 
 
@@ -41,11 +43,14 @@ class BaseCrudDB:
 
 
 def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
-    for ordering_field in ordering_fields:
-        if ordering_field.startswith("-"):
-            query = query.order_by(text(f'{ordering_field[1:]} desc'))
-        else:
-            query = query.order_by(text(f"{ordering_field} asc"))
+    available_field = list(itertools.chain(*[fields.columns.keys() for fields in query.froms]))
+    for field_name in ordering_fields:
+        order = 'asc'
+        if field_name.startswith('-'):
+            order = 'desc'
+            field_name = field_name.removeprefix('-')
+        if field_name in available_field:
+            query = query.order_by(text(f"{field_name} {order}"))
     return query
 
 
@@ -60,6 +65,7 @@ async def get_many_by_query(q: Query, options: GetManyOptions | dict = None) -> 
         q = q.offset(options.offset)
     if options.ordering_fields:
         q = order_by_fields(q, options.ordering_fields)
+    q = set_filters(q, options.filters)
     result = await get_session().execute(q)
     return result.scalars().all()
 

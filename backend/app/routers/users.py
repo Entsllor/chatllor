@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from app.crud import Users
 from app.schemas.users import UserPrivate, UserCreate, UserPublic, User
 from app.utils.dependencies import get_current_active_user
+from app.utils.filtering import filter_by_model
+from app.utils.options import GetManyOptions
 
 router = APIRouter(prefix="/users")
 
@@ -23,5 +25,5 @@ async def read_user_me(user: User = Depends(get_current_active_user)):
 
 
 @router.get("/", response_model=list[UserPublic])
-async def read_users():
-    return await Users.get_many_by_query()
+async def read_users(filters=Depends(filter_by_model(UserPublic))):
+    return await Users.get_many(_options=GetManyOptions(filters=filters))

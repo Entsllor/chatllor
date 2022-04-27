@@ -27,4 +27,4 @@ class UserRepo(BaseCrudDB):
         return await get_one_by_query(q, options=options)
 
 
-Users = UserRepo()
+Users: UserRepo = UserRepo()

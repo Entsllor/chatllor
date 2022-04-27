@@ -1,6 +1,8 @@
 from dataclasses import dataclass, asdict
 from typing import Iterable
 
+from app.utils.filtering import Filter
+
 
 @dataclass(slots=True, kw_only=True)
 class BaseOptions:
@@ -34,3 +36,4 @@ class PaginationOptions(BaseOptions):
 @dataclass(slots=True, kw_only=True)
 class GetManyOptions(PaginationOptions):
     ordering_fields: Iterable[str] = tuple()
+    filters: Iterable[Filter] = tuple()
