@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     TEST_DB_URL: str = "postgresql+asyncpg:///user:pass@localhost:5432/test"
     JWT_ALGORITHM: str = "HS256"
     SECRET_KEY: str
+    ALEMBIC_PATH: Path | str = BASE_PATH.parent.joinpath("migrations")
     ALLOWED_ORIGINS: list = ["https://localhost:3000", "http://localhost:3000"]
     ACCESS_TOKEN_EXPIRE_SECONDS: int = 60 * 20
     REFRESH_TOKEN_EXPIRE_SECONDS: int = 60 * 60 * 24 * 30
