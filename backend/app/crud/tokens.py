@@ -19,11 +19,6 @@ class RefreshTokenCRUD(BaseCrudDB):
         refresh_token = self.model(user_id=user_id, expire_at=expire_at)
         return await create_instance(refresh_token)
 
-    async def get_by_body_and_user_id(self, user_id: int, body: str,
-                                      options: GetOneOptions = None) -> models.RefreshToken:
-        q = self._select.where(self.model.user_id == user_id, self.model.body == body)
-        return await get_one_by_query(q, options=options)
-
     async def get_valid_token(self, user_id, body) -> models.RefreshToken:
         q = self._select.where(
             self.model.user_id == user_id,
