@@ -1,3 +1,4 @@
+import secrets
 import time
 
 from sqlalchemy import Column, String, Integer, ForeignKey
@@ -8,7 +9,7 @@ from app.core.database import Base
 
 class RefreshToken(Base):
     __tablename__ = "refresh_token"
-    body = Column(String(length=63), primary_key=True)
+    body = Column(String(length=127), primary_key=True, default=lambda: secrets.token_urlsafe(90))
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", backref="refresh_tokens")
     expire_at = Column(Integer, index=True)  # Unix time

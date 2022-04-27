@@ -1,4 +1,3 @@
-import os
 import time
 
 from jose import jwt
@@ -12,16 +11,12 @@ from app.utils.options import GetOneOptions
 class RefreshTokenCRUD(BaseCrudDB):
     model = models.RefreshToken
 
-    @staticmethod
-    async def create_body() -> str:
-        return os.urandom(63).hex()[:63]
-
     async def create(self, user_id, expire_delta: int = None) -> models.RefreshToken:
         await delete_by_query(self._delete.where(self.model.user_id == user_id))
         if expire_delta is None:
             expire_delta = settings.REFRESH_TOKEN_EXPIRE_SECONDS
         expire_at = time.time() + expire_delta
-        refresh_token = self.model(user_id=user_id, expire_at=expire_at, body=await self.create_body())
+        refresh_token = self.model(user_id=user_id, expire_at=expire_at)
         return await create_instance(refresh_token)
 
     async def get_by_body_and_user_id(self, user_id: int, body: str,
