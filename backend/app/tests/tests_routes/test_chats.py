@@ -9,8 +9,9 @@ from ...crud import Chats
 CHAT_CREATE_DATA = ChatCreate(name="_TEST_CHAT")
 
 
-def test_create_chat(client, token_pair):
-    response = client.post(
+@pytest.mark.asyncio
+async def test_create_chat(client, token_pair):
+    response = await client.post(
         url=paths.CHATS,
         headers=token_auth(token_pair.access_token),
         json=CHAT_CREATE_DATA.dict()
@@ -20,14 +21,15 @@ def test_create_chat(client, token_pair):
     assert chat['name'] == CHAT_CREATE_DATA.name
 
 
-def test_failed_create_chat_unauthorized(client, token_pair):
-    response = client.post(url=paths.CHATS, json=CHAT_CREATE_DATA.dict())
+@pytest.mark.asyncio
+async def test_failed_create_chat_unauthorized(client, token_pair):
+    response = await client.post(url=paths.CHATS, json=CHAT_CREATE_DATA.dict())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.asyncio
 async def test_delete_chat(client, token_pair, chat_with_default_user):
-    response = client.delete(
+    response = await client.delete(
         url=paths.CHATS + str(chat_with_default_user.id),
         headers=token_auth(token_pair.access_token)
     )
@@ -37,7 +39,7 @@ async def test_delete_chat(client, token_pair, chat_with_default_user):
 
 @pytest.mark.asyncio
 async def test_failed_delete_chat_user_not_in_the_chat(client, token_pair, empty_chat):
-    response = client.delete(
+    response = await client.delete(
         url=paths.CHATS + str(empty_chat.id),
         headers=token_auth(token_pair.access_token),
     )
@@ -47,6 +49,6 @@ async def test_failed_delete_chat_user_not_in_the_chat(client, token_pair, empty
 
 @pytest.mark.asyncio
 async def test_failed_delete_unauthorized(client, token_pair, empty_chat):
-    response = client.delete(url=paths.CHATS + str(empty_chat.id))
+    response = await client.delete(url=paths.CHATS + str(empty_chat.id))
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert await Chats.get_one(id=empty_chat.id) is empty_chat

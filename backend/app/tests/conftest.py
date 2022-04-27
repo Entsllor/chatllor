@@ -3,8 +3,8 @@ import os
 from asyncio import AbstractEventLoop
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncConnection
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, AsyncConnection, AsyncEngine
 
 os.environ.setdefault("APP_MODE", "test")
 from app import models
@@ -30,31 +30,38 @@ def event_loop():
 
 
 @pytest.fixture(scope="session")
-async def db_engine(event_loop) -> AsyncConnection:
+def db_engine() -> AsyncEngine:
     engine = create_db_engine(settings.TEST_DB_URL)
-    async with engine.connect() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        yield conn
-        await conn.run_sync(Base.metadata.drop_all)
+    yield engine
     engine.dispose()
 
 
+@pytest.fixture(scope="session")
+async def db_tables(db_engine) -> AsyncConnection:
+    async with db_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with db_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
 @pytest.fixture(scope="function")
-def db(db_engine, event_loop: AbstractEventLoop) -> AsyncSession:
+def db(db_tables, db_engine, event_loop: AbstractEventLoop) -> AsyncSession:
     session = AsyncSession(bind=db_engine)
     try:
         db_context.set(session)
         yield session
     finally:
         db_context.set(None)
+        # use run-until-complete instead of await else context var will not set
         event_loop.run_until_complete(session.rollback())
         event_loop.run_until_complete(session.close())
 
 
 @pytest.fixture(scope="function")
-async def client(db) -> TestClient:
+async def client(db, event_loop) -> AsyncClient:
     app.dependency_overrides[get_db] = lambda: db
-    with TestClient(app) as test_client:
+    async with AsyncClient(app=app, base_url="http://test/") as test_client:
         yield test_client
 
 
