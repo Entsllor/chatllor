@@ -29,15 +29,15 @@ class BaseCrudDB:
     def _delete(self) -> Query:
         return delete(self.model)
 
-    async def get_one(self, _options: GetOneOptions = None, **filters):
+    async def get_one(self, _options: GetOneOptions = None, **filters) -> Base:
         query = self._select.filter_by(**filters)
         return await get_one_by_query(query, options=_options)
 
-    async def get_many(self, _options: GetManyOptions = None, **filters):
+    async def get_many(self, _options: GetManyOptions = None, **filters) -> list[Base]:
         query = self._select.filter_by(**filters)
         return await get_many_by_query(query, options=_options)
 
-    async def delete(self, **filters) -> None:
+    async def delete(self, **filters) -> int:
         query = self._delete.filter_by(**filters)
         return await delete_by_query(query)
 
@@ -84,16 +84,16 @@ async def get_one_by_query(q: Query, options: GetOneOptions | Mapping = None) ->
     return instances[0]
 
 
-async def delete_by_query(q: Query):
-    return await get_session().execute(q)
+async def delete_by_query(q: Query) -> int:
+    return (await get_session().execute(q)).rowcount
 
 
-async def update_by_query(q: Query):
+async def update_by_query(q: Query) -> int:
     q.execution_options(synchronize_session="fetch")
-    await get_session().execute(q)
+    return (await get_session().execute(q)).rowcount
 
 
-async def update_instance(instance, **values):
+async def update_instance(instance: Base, **values) -> Base:
     for key, value in values.items():
         setattr(instance, key, value)
     await get_session().flush(objects=[instance])
@@ -101,7 +101,7 @@ async def update_instance(instance, **values):
     return instance
 
 
-async def create_instance(instance):
+async def create_instance(instance: Base) -> Base:
     get_session().add(instance)
     await get_session().flush()
     await get_session().refresh(instance)
