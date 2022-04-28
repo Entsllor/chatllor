@@ -75,23 +75,32 @@ async def second_user(db) -> models.User:
     yield await Users.create(**USER_CREATE_DATA.dict() | {'username': "Luidji", 'email': "luidji@example.com"})
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 async def empty_chat(db) -> models.Chat:
     yield await Chats.create(name="test_chat_can_be_created")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 async def chat_with_default_user(empty_chat, default_user) -> models.Chat:
     await ChatUsers.create(user_id=default_user.id, chat_id=empty_chat.id)
     yield empty_chat  # now not empty
 
 
-@pytest.fixture(scope="function")
-async def token_pair(default_user, client) -> tokens.AuthTokensBodies:
-    access_token = await AccessTokens.create(user_id=default_user.id)
+@pytest.fixture
+async def access_token(default_user) -> models.AccessToken:
+    yield await AccessTokens.create(user_id=default_user.id)
+
+
+@pytest.fixture
+async def auth_header(access_token) -> dict[str, str]:
+    yield get_auth_header(access_token.body)
+
+
+@pytest.fixture
+async def token_pair(default_user, client, access_token) -> tokens.AuthTokensBodies:
     refresh_token = await RefreshTokens.create(user_id=default_user.id)
     yield tokens.AuthTokensBodies(access_token=access_token.body, refresh_token=refresh_token.body)
 
 
-def token_auth(access_token_body: str) -> dict:
+def get_auth_header(access_token_body: str) -> dict:
     return {"Authorization": f"Bearer {access_token_body}"}
