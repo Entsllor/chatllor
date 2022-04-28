@@ -1,5 +1,5 @@
 import itertools
-from typing import Iterable
+from typing import Iterable, Mapping
 
 from sqlalchemy import select, update, insert, delete, text
 from sqlalchemy.orm import Query
@@ -54,11 +54,10 @@ def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
     return query
 
 
-async def get_many_by_query(q: Query, options: GetManyOptions | dict = None) -> list:
-    if isinstance(options, dict):
+async def get_many_by_query(q: Query, options: GetManyOptions | Mapping = None) -> list:
+    if isinstance(options, Mapping):
         options = GetManyOptions(**options)
-    elif options is None:
-        options = GetManyOptions()
+    options = options or GetManyOptions()
     if options.limit is not None:
         q = q.limit(options.limit)
     if options.offset is not None:
@@ -70,11 +69,10 @@ async def get_many_by_query(q: Query, options: GetManyOptions | dict = None) -> 
     return result.scalars().all()
 
 
-async def get_one_by_query(q: Query, options: GetOneOptions | dict = None) -> Base:
-    if isinstance(options, dict):
+async def get_one_by_query(q: Query, options: GetOneOptions | Mapping = None) -> Base:
+    if isinstance(options, Mapping):
         options = GetOneOptions(**options)
-    elif options is None:
-        options = GetOneOptions()
+    options = options or GetOneOptions()
     limit = 2 if options.raise_if_many else 1
     instances = await get_many_by_query(q=q, options=GetManyOptions(limit=limit))
     if options.raise_if_many and len(instances) > 2:
