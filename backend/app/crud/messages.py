@@ -16,8 +16,10 @@ class MessagesCrud(BaseCrudDB):
 
     async def get_user_available_chat_messages(
             self, user_id: int, chat_id: int, _options: GetManyOptions = None) -> list[models.Message]:
-        query = self._select.join(models.ChatUser, models.ChatUser.user_id == user_id) \
-            .filter_by(chat_id=chat_id).where(self.model.created_at >= models.ChatUser.joined_at)
+        query = (self._select.
+                 filter_by(chat_id=chat_id).
+                 where(self.model.created_at >= models.ChatUser.joined_at).
+                 join(models.ChatUser, models.ChatUser.user_id == user_id))
         return await get_many_by_query(query, options=_options)
 
 

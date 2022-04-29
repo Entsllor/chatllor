@@ -2,7 +2,6 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, Text, String, DateTime, Boolean
 
-from app.core.database import Base
 from app.models.base import ModelInDB
 from app.utils.passwords import verify_password
 

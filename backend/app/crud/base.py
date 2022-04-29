@@ -4,14 +4,15 @@ from typing import Iterable, Mapping
 from sqlalchemy import select, update, insert, delete, text
 from sqlalchemy.orm import Query
 
-from app.core.database import Base, get_session
+from app.core.database import get_session
+from app.models.base import ModelInDB
 from app.utils.exceptions import ExpectedOneInstance, InstanceNotFound
 from app.utils.filtering import set_filters
 from app.utils.options import GetManyOptions, GetOneOptions
 
 
 class BaseCrudDB:
-    model: Base
+    model: ModelInDB
 
     @property
     def _select(self) -> Query:
@@ -29,11 +30,11 @@ class BaseCrudDB:
     def _delete(self) -> Query:
         return delete(self.model)
 
-    async def get_one(self, _options: GetOneOptions = None, **filters) -> Base:
+    async def get_one(self, _options: GetOneOptions = None, **filters) -> ModelInDB:
         query = self._select.filter_by(**filters)
         return await get_one_by_query(query, options=_options)
 
-    async def get_many(self, _options: GetManyOptions = None, **filters) -> list[Base]:
+    async def get_many(self, _options: GetManyOptions = None, **filters) -> list[ModelInDB]:
         query = self._select.filter_by(**filters)
         return await get_many_by_query(query, options=_options)
 
@@ -54,7 +55,7 @@ def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
     return query
 
 
-async def get_many_by_query(q: Query, options: GetManyOptions | Mapping = None) -> list:
+async def get_many_by_query(q: Query, options: GetManyOptions | Mapping = None) -> list[ModelInDB]:
     if isinstance(options, Mapping):
         options = GetManyOptions(**options)
     options = options or GetManyOptions()
@@ -69,7 +70,7 @@ async def get_many_by_query(q: Query, options: GetManyOptions | Mapping = None) 
     return result.scalars().all()
 
 
-async def get_one_by_query(q: Query, options: GetOneOptions | Mapping = None) -> Base:
+async def get_one_by_query(q: Query, options: GetOneOptions | Mapping = None) -> ModelInDB | None:
     if isinstance(options, Mapping):
         options = GetOneOptions(**options)
     options = options or GetOneOptions()
@@ -93,7 +94,7 @@ async def update_by_query(q: Query) -> int:
     return (await get_session().execute(q)).rowcount
 
 
-async def update_instance(instance: Base, **values) -> Base:
+async def update_instance(instance: ModelInDB, **values) -> ModelInDB:
     for key, value in values.items():
         setattr(instance, key, value)
     await get_session().flush(objects=[instance])
@@ -101,7 +102,7 @@ async def update_instance(instance: Base, **values) -> Base:
     return instance
 
 
-async def create_instance(instance: Base) -> Base:
+async def create_instance(instance: ModelInDB) -> ModelInDB:
     get_session().add(instance)
     await get_session().flush()
     await get_session().refresh(instance)

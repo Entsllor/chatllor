@@ -19,11 +19,11 @@ async def user_create_a_chat(user_id: int, chat_name: str) -> models.Chat:
     return chat
 
 
-async def user_delete_a_chat(user_id: int, chat_id: int) -> None:
+async def user_delete_a_chat(user_id: int, chat_id: int) -> int:
     chat_user = await ChatUsers.get_one(user_id=user_id, chat_id=chat_id)
     if not chat_user:
         raise exceptions.Forbidden
-    await Chats.delete(chat_id=chat_user.chat_id)
+    return await Chats.delete(chat_id=chat_user.chat_id)
 
 
 async def add_user_to_chat(user_id: int, chat_id: int) -> models.ChatUser:
@@ -33,8 +33,8 @@ async def add_user_to_chat(user_id: int, chat_id: int) -> models.ChatUser:
     return await ChatUsers.create(user_id=user_id, chat_id=chat_id)
 
 
-async def remove_user_from_chat(user_id: int, chat_id: int) -> None:
+async def remove_user_from_chat(user_id: int, chat_id: int) -> int:
     chat = await Chats.get_one(id=chat_id)
     if chat is None:
         raise exceptions.InstanceNotFound
-    await ChatUsers.delete(user_id=user_id, chat_id=chat_id)
+    return await ChatUsers.delete(user_id=user_id, chat_id=chat_id)

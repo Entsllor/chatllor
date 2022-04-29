@@ -63,7 +63,7 @@ class AccessToken(Model):
         return payload.get("sub")
 
     @property
-    def user_id(self):
+    def user_id(self) -> int:
         return int(self.sub)
 
     @property
@@ -71,9 +71,9 @@ class AccessToken(Model):
         return self.payload.get("exp")
 
     @property
-    def is_active(self):
+    def is_active(self) -> bool:
         return time.time() < self.expire_at
 
-    def validate(self, **options):
+    def validate(self, **options) -> None:
         options = DEFAULT_VALIDATION_OPTIONS.copy() | options
         jwt.decode(self.body, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM], options=options)

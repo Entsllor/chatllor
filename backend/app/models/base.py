@@ -2,10 +2,11 @@ from app.core.database import Base
 
 
 class Model:
-    pass
+    def __init__(self, *args, **kwargs):
+        super(Model, self).__init__(*args, **kwargs)
 
 
-class ModelInDB(Model, Base):
+class ModelInDB(Base, Model):
     __abstract__ = True
 
     def _get_primary_keys(self) -> dict:
