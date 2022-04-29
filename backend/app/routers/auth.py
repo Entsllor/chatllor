@@ -6,6 +6,7 @@ from app.schemas.tokens import AccessTokenOut
 from app.services import auth
 from app.utils import exceptions
 
+
 router = APIRouter()
 LOGIN_URL = "/token/"
 REVOKE_REFRESH_TOKEN_URL = "/token/refresh/"
