@@ -1,13 +1,10 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from app.schemas.base import BaseScheme
 
 
-class UserBase(BaseModel):
+class UserBase(BaseScheme):
     username: str
-
-    class Config:
-        orm_mode = True
 
 
 class UserCreate(UserBase):

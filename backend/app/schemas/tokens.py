@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from app.schemas.base import BaseScheme
 
 
-class Token(BaseModel):
+class Token(BaseScheme):
     expire_at: int | None
     body: str
 
@@ -13,16 +13,13 @@ class AccessToken(Token):
 class RefreshToken(Token):
     user_id: int = None
 
-    class Config:
-        orm_mode = True
 
-
-class AuthTokens(BaseModel):
+class AuthTokens(BaseScheme):
     access_token: AccessToken
     refresh_token: RefreshToken
 
 
-class AccessTokenOut(BaseModel):
+class AccessTokenOut(BaseScheme):
     access_token: str
     token_type: str = "bearer"
 

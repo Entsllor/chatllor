@@ -1,9 +1,8 @@
-from pydantic import BaseModel
+from app.schemas.base import BaseScheme
 
 
-class MessageBase(BaseModel):
-    class Config:
-        orm_mode = True
+class MessageBase(BaseScheme):
+    pass
 
 
 class MessageCreate(MessageBase):

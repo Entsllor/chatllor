@@ -1,9 +1,8 @@
-from pydantic import BaseModel
+from app.schemas.base import BaseScheme
 
 
-class ChatBase(BaseModel):
-    class Config:
-        orm_mode = True
+class ChatBase(BaseScheme):
+    pass
 
 
 class ChatCreate(ChatBase):

@@ -84,7 +84,7 @@ async def test_read_messages(client, auth_header, chat_with_default_user, second
     await Messages.create(default_user.id, "__test_read_messages_1", chat_id=chat_with_default_user.id)
     await Messages.create(second_user.id, "__test_read_messages_2", chat_id=chat_with_default_user.id)
     response = await client.get(url=urls.read_messages(chat_id=chat_with_default_user.id), headers=auth_header)
-    db_messages = [schemas.messages.MessageOut.from_orm(msg)
+    db_messages = [schemas.messages.MessageOut.from_orm(msg).dict(by_alias=True)
                    for msg in await Messages.get_all(chat_id=chat_with_default_user.id)]
     assert response.status_code == status.HTTP_200_OK
     assert len(db_messages) == 2
