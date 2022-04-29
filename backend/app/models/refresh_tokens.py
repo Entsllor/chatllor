@@ -4,10 +4,10 @@ import time
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.core.database import Base
+from app.models.base import ModelInDB
 
 
-class RefreshToken(Base):
+class RefreshToken(ModelInDB):
     __tablename__ = "refresh_token"
     body = Column(String(length=127), primary_key=True, default=lambda: secrets.token_urlsafe(90))
     user_id = Column(Integer, ForeignKey("user.id"))

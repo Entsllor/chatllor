@@ -1,9 +1,10 @@
+import dataclasses
 import time
-from typing import NamedTuple
 
 from jose import jwt
 
 from app.core.settings import settings
+from app.models.base import Model
 
 DEFAULT_VALIDATION_OPTIONS = {
     'verify_signature': True,
@@ -48,7 +49,8 @@ SKIP_VALIDATION = {
 }
 
 
-class AccessToken(NamedTuple):
+@dataclasses.dataclass(slots=True)
+class AccessToken(Model):
     body: str
 
     @property

@@ -2,10 +2,10 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, DateTime, ForeignKey
 
-from app.core.database import Base
+from app.models.base import ModelInDB
 
 
-class ChatUser(Base):
+class ChatUser(ModelInDB):
     __tablename__ = 'chat_user'
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE", onupdate="CASCADE"), index=True, nullable=False)

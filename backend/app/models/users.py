@@ -3,10 +3,11 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, Text, String, DateTime, Boolean
 
 from app.core.database import Base
+from app.models.base import ModelInDB
 from app.utils.passwords import verify_password
 
 
-class User(Base):
+class User(ModelInDB):
     __tablename__ = "user"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(Text, index=True, unique=True)
