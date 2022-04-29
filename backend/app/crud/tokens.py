@@ -4,7 +4,7 @@ from jose import jwt
 
 from app import models
 from app.core.settings import settings
-from app.crud.base import update_by_query, create_instance, delete_by_query, get_one_by_query, BaseCrudDB
+from app.crud.base import create_instance, delete_by_query, get_one_by_query, BaseCrudDB
 from app.utils.options import GetOneOptions
 
 
@@ -28,10 +28,10 @@ class RefreshTokenCRUD(BaseCrudDB):
         return await get_one_by_query(q, options=GetOneOptions(raise_if_none=True))
 
     async def change_expire_term(self, user_id: int, token_body: str, expire_at: int):
-        q = self._update. \
-            where(self.model.user_id == user_id, self.model.body == token_body). \
-            values(expire_at=expire_at)
-        return await update_by_query(q)
+        return await self.update(
+            values={'expire_at': expire_at},
+            filters={'user_id': user_id, 'body': token_body}
+        )
 
 
 class AccessTokenCRUD:

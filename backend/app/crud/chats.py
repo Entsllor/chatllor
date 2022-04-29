@@ -10,7 +10,7 @@ class ChatCrud(BaseCrudDB):
         chat = self.model(name=name)
         return await create_instance(chat)
 
-    async def delete(self, chat_id: int) -> None:
+    async def delete(self, chat_id: int) -> int:
         await ChatUsers.delete(chat_id=chat_id)
         query = self._delete.where(self.model.id == chat_id)
         return await delete_by_query(query)

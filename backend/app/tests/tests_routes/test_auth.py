@@ -13,7 +13,7 @@ from conftest import get_auth_header
 
 @pytest.mark.asyncio
 async def test_registration_with_valid_data(client):
-    assert not await Users.get_by_username(username=DEFAULT_USER_NAME)
+    assert not await Users.get_one(username=DEFAULT_USER_NAME)
     response = await client.post(paths.USERS_LIST, json=USER_CREATE_DATA.dict())
     response_data = response.json()
     assert response_data["username"] == DEFAULT_USER_NAME
@@ -25,27 +25,27 @@ async def test_registration_with_valid_data(client):
 @pytest.mark.asyncio
 async def test_failed_registration_if_no_email(client):
     response = await client.post(paths.USERS_LIST, json=USER_CREATE_DATA.dict(exclude={"email"}))
-    assert not await Users.get_by_username(username=DEFAULT_USER_NAME)
+    assert not await Users.get_one(username=DEFAULT_USER_NAME)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 @pytest.mark.asyncio
 async def test_failed_registration_if_no_password(client):
     response = await client.post(paths.USERS_LIST, json=USER_CREATE_DATA.dict(exclude={"password"}))
-    assert not await Users.get_by_username(username=DEFAULT_USER_NAME)
+    assert not await Users.get_one(username=DEFAULT_USER_NAME)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 @pytest.mark.asyncio
 async def test_failed_registration_if_no_username(client):
     response = await client.post(paths.USERS_LIST, json=USER_CREATE_DATA.dict(exclude={"username"}))
-    assert not await Users.get_by_email(email=DEFAULT_USER_EMAIL)
+    assert not await Users.get_one(email=DEFAULT_USER_EMAIL)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 @pytest.mark.asyncio
 async def test_failed_registration_if_not_unique_username(default_user, client):
-    assert await Users.get_by_username(username=DEFAULT_USER_NAME)
+    assert await Users.get_one(username=DEFAULT_USER_NAME)
     user_with_same_username = USER_CREATE_DATA.copy()
     user_with_same_username.email = "ANOTHER" + DEFAULT_USER_EMAIL
     response = await client.post(paths.USERS_LIST, json=user_with_same_username.dict())

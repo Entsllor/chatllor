@@ -15,7 +15,7 @@ class ChatUserCrud(BaseCrudDB):
         return await get_many_by_query(query, options)
 
     async def get_chat_users(self, chat_id: int, options: GetManyOptions = None) -> list[models.User]:
-        query = self._select.join().where(self.model.chat_id == chat_id)
+        query = self._select.where(self.model.chat_id == chat_id)
         return await get_many_by_query(query, options)
 
 
