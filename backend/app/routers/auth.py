@@ -6,13 +6,11 @@ from app.schemas.tokens import AccessTokenOut
 from app.services import auth
 from app.utils import exceptions
 
-
-router = APIRouter()
-LOGIN_URL = "/token/"
-REVOKE_REFRESH_TOKEN_URL = "/token/refresh/"
+AUTH_PREFIX = '/auth'
+router = APIRouter(prefix=AUTH_PREFIX)
 
 
-@router.post(LOGIN_URL, response_model=AccessTokenOut)
+@router.post('/login', response_model=AccessTokenOut)
 async def login_by_password(response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
     user = await auth.authorize_by_username_and_password(form_data.username, form_data.password)
     access_token, refresh_token = await auth.create_auth_token_pair(user.id)
@@ -21,21 +19,19 @@ async def login_by_password(response: Response, form_data: OAuth2PasswordRequest
         value=access_token.body,
         httponly=True,
         expires=settings.ACCESS_TOKEN_EXPIRE_SECONDS,
-        path=REVOKE_REFRESH_TOKEN_URL
+        path=AUTH_PREFIX
     )
     response.set_cookie(
         key="refresh_token",
         value=refresh_token.body,
         httponly=True,
         expires=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
-        path=REVOKE_REFRESH_TOKEN_URL
+        path=AUTH_PREFIX
     )
-    return AccessTokenOut(
-        access_token=access_token.body,
-    )
+    return AccessTokenOut(access_token=access_token.body)
 
 
-@router.post(REVOKE_REFRESH_TOKEN_URL, response_model=AccessTokenOut)
+@router.post('/revoke', response_model=AccessTokenOut)
 async def revoke_token(response: Response, access_token: str = Cookie(None), refresh_token: str = Cookie(None)):
     if not access_token or not refresh_token:
         raise exceptions.InvalidAuthTokens
@@ -48,15 +44,13 @@ async def revoke_token(response: Response, access_token: str = Cookie(None), ref
         value=access_token.body,
         httponly=True,
         expires=settings.ACCESS_TOKEN_EXPIRE_SECONDS,
-        path=REVOKE_REFRESH_TOKEN_URL
+        path=AUTH_PREFIX
     )
     response.set_cookie(
         key="refresh_token",
         value=refresh_token.body,
         httponly=True,
         expires=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
-        path=REVOKE_REFRESH_TOKEN_URL
+        path=AUTH_PREFIX
     )
-    return AccessTokenOut(
-        access_token=access_token.body,
-    )
+    return AccessTokenOut(access_token=access_token.body)
