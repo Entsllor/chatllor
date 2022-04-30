@@ -72,12 +72,12 @@ async def default_user(db) -> models.User:
 
 @pytest.fixture(scope="function")
 async def second_user(db) -> models.User:
-    yield await Users.create(**USER_CREATE_DATA.dict() | {'username': "Luidji", 'email': "luidji@example.com"})
+    yield await Users.create(**USER_CREATE_DATA.dict() | {'username': "SECOND_USER", 'email': "second@example.com"})
 
 
 @pytest.fixture
 async def empty_chat(db) -> models.Chat:
-    yield await Chats.create(name="test_chat_can_be_created")
+    yield await Chats.create(name="EMPTY_CHAT")
 
 
 @pytest.fixture

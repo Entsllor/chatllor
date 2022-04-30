@@ -43,33 +43,36 @@ async def test_failed_get_user_by_access_token_if_user_is_not_active(default_use
 
 
 @pytest.mark.asyncio
-async def test_revoke_tokens(default_user):
-    refresh_token = await RefreshTokens.create(user_id=default_user.id)
-    access_token = await AccessTokens.create(user_id=default_user.id)
-    new_access_token, new_refresh_token = await revoke_tokens(access_token_body=access_token.body,
-                                                              refresh_token_body=refresh_token.body)
+async def test_revoke_tokens(token_pair):
+    new_access_token, new_refresh_token = await revoke_tokens(
+        access_token_body=token_pair.access_token,
+        refresh_token_body=token_pair.refresh_token
+    )
     assert isinstance(new_access_token, models.AccessToken)
     assert isinstance(new_refresh_token, models.RefreshToken)
-    assert refresh_token.body != new_refresh_token.body
-    assert access_token.body != new_access_token.body
+    assert token_pair.refresh_token != new_refresh_token.body
+    assert token_pair.access_token != new_access_token.body
 
 
 @pytest.mark.asyncio
 async def test_revoke_tokens_with_expired_access_token(default_user):
     refresh_token = await RefreshTokens.create(user_id=default_user.id)
     access_token = await AccessTokens.create(user_id=default_user.id, expire_delta=-100)
-    new_access_token, new_refresh_token = await revoke_tokens(access_token_body=access_token.body,
-                                                              refresh_token_body=refresh_token.body)
+    new_access_token, new_refresh_token = await revoke_tokens(
+        access_token_body=access_token.body,
+        refresh_token_body=refresh_token.body
+    )
     assert refresh_token.body != new_refresh_token.body
     assert access_token.body != new_access_token.body
 
 
 @pytest.mark.asyncio
-async def test_failed_revoke_tokens_invalid_refresh_token(default_user):
-    refresh_token = await RefreshTokens.create(user_id=default_user.id)
-    access_token = await AccessTokens.create(user_id=default_user.id)
+async def test_failed_revoke_tokens_invalid_refresh_token(token_pair):
     with pytest.raises(exceptions.InvalidAuthTokens):
-        await revoke_tokens(access_token_body=access_token.body, refresh_token_body=refresh_token.body + "_invalid")
+        await revoke_tokens(
+            access_token_body=token_pair.access_token,
+            refresh_token_body=token_pair.refresh_token + "_invalid"
+        )
 
 
 @pytest.mark.asyncio
@@ -81,11 +84,12 @@ async def test_failed_revoke_tokens_expired_refresh_token(default_user):
 
 
 @pytest.mark.asyncio
-async def test_failed_revoke_tokens_invalid_access_token(default_user):
-    refresh_token = await RefreshTokens.create(user_id=default_user.id)
-    access_token = await AccessTokens.create(user_id=default_user.id)
+async def test_failed_revoke_tokens_invalid_access_token(token_pair):
     with pytest.raises(exceptions.InvalidAuthTokens):
-        await revoke_tokens(access_token_body=access_token.body + "_invalid", refresh_token_body=refresh_token.body)
+        await revoke_tokens(
+            access_token_body=token_pair.access_token + "_invalid",
+            refresh_token_body=token_pair.refresh_token
+        )
 
 
 @pytest.mark.asyncio

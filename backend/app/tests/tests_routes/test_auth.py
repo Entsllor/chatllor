@@ -109,9 +109,8 @@ async def test_failed_refreshing_token_if_invalid_access_token(client, token_pai
 
 
 @pytest.mark.asyncio
-async def test_failed_refreshing_token_if_access_token_belongs_to_another_user(client, token_pair):
-    another_user = await Users.create(username="ANOTHER_USER", password="Another_Password", email="another@email")
-    another_access_token = await RefreshTokens.create(user_id=another_user.id)
+async def test_failed_refreshing_token_if_access_token_belongs_to_another_user(client, token_pair, second_user):
+    another_access_token = await RefreshTokens.create(user_id=second_user.id)
     token_pair.access_token = another_access_token.body
     response = await client.post(urls.revoke_token, cookies=token_pair.dict())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
