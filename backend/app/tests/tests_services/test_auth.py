@@ -69,7 +69,7 @@ async def test_revoke_tokens_with_expired_access_token(default_user):
 
 @pytest.mark.asyncio
 async def test_failed_revoke_tokens_invalid_refresh_token(token_pair):
-    with pytest.raises(exceptions.InvalidAuthTokens):
+    with pytest.raises(exceptions.CredentialsException):
         await revoke_tokens(
             access_token_body=token_pair.access_token,
             refresh_token_body=token_pair.refresh_token + "_invalid"
@@ -80,13 +80,13 @@ async def test_failed_revoke_tokens_invalid_refresh_token(token_pair):
 async def test_failed_revoke_tokens_expired_refresh_token(default_user):
     refresh_token = await RefreshTokens.create(user_id=default_user.id, expire_delta=-100)
     access_token = await AccessTokens.create(user_id=default_user.id)
-    with pytest.raises(exceptions.InvalidAuthTokens):
+    with pytest.raises(exceptions.CredentialsException):
         await revoke_tokens(access_token_body=access_token.body, refresh_token_body=refresh_token.body)
 
 
 @pytest.mark.asyncio
 async def test_failed_revoke_tokens_invalid_access_token(token_pair):
-    with pytest.raises(exceptions.InvalidAuthTokens):
+    with pytest.raises(exceptions.CredentialsException):
         await revoke_tokens(
             access_token_body=token_pair.access_token + "_invalid",
             refresh_token_body=token_pair.refresh_token

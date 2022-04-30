@@ -1,7 +1,7 @@
 import dataclasses
 import time
 
-from jose import jwt
+from jose import jwt, JWTError
 
 from app.core.settings import settings
 from app.models.base import Model
@@ -74,6 +74,10 @@ class AccessToken(Model):
     def is_active(self) -> bool:
         return time.time() < self.expire_at
 
-    def validate(self, **options) -> None:
+    def validate(self, **options) -> bool:
         options = DEFAULT_VALIDATION_OPTIONS.copy() | options
-        jwt.decode(self.body, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM], options=options)
+        try:
+            jwt.decode(self.body, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM], options=options)
+        except JWTError:
+            return False
+        return True

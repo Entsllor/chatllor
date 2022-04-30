@@ -13,14 +13,6 @@ class IncorrectLoginOrPassword(BaseAppException):
     )
 
 
-class InvalidAuthTokens(BaseAppException):
-    as_http = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Expected an active refresh token and an access token with valid signature (allow expired)",
-        headers={"WWW-Authenticate": "Bearer"}
-    )
-
-
 class ExpectedActiveAccessToken(BaseAppException):
     as_http = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

@@ -19,13 +19,13 @@ class RefreshTokenCRUD(BaseCrudDB):
         refresh_token = self.model(user_id=user_id, expire_at=expire_at)
         return await create_instance(refresh_token)
 
-    async def get_valid_token(self, user_id, body) -> models.RefreshToken:
+    async def get_valid_token(self, user_id, body) -> models.RefreshToken | None:
         q = self._select.where(
             self.model.user_id == user_id,
             self.model.body == body,
             self.model.expire_at >= time.time()
         )
-        return await get_one_by_query(q, options=GetOneOptions(raise_if_none=True))
+        return await get_one_by_query(q)
 
     async def change_expire_term(self, user_id: int, token_body: str, expire_at: int):
         return await self.update(
