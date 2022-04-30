@@ -49,3 +49,14 @@ async def get_user_by_access_token(token_body=Depends(oauth2_scheme), only_activ
     except InstanceNotFound:
         raise UserNotFoundError
     return user
+
+
+async def delete_refresh_token(access_token_body: str, refresh_token_body: str) -> bool:
+    """Delete refresh token from DB if access token signature is valid"""
+    access_token = models.AccessToken(access_token_body)
+    try:
+        access_token.validate(verify_exp=False)
+    except JWTError:
+        return False
+    is_refresh_token_deleted = await RefreshTokens.delete(user_id=access_token.user_id, body=refresh_token_body)
+    return bool(is_refresh_token_deleted)

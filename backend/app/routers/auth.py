@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, Cookie
+from fastapi import APIRouter, Depends, Response, Cookie, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.settings import settings
@@ -54,3 +54,11 @@ async def revoke_token(response: Response, access_token: str = Cookie(None), ref
         path=AUTH_PREFIX
     )
     return AccessTokenOut(access_token=access_token.body)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(response: Response, access_token: str = Cookie(None), refresh_token: str = Cookie(None)):
+    """Clear auth cookies and delete refresh token from db if access token signature is valid"""
+    await auth.delete_refresh_token(access_token_body=access_token, refresh_token_body=refresh_token)
+    response.delete_cookie(key="access_token", httponly=True, path=AUTH_PREFIX)
+    response.delete_cookie(key="refresh_token", httponly=True, path=AUTH_PREFIX)

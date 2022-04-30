@@ -6,8 +6,8 @@ from pydantic import ValidationError
 
 from app.crud import Users, RefreshTokens, AccessTokens
 from app.schemas.tokens import AccessTokenOut
-from app.tests.urls import urls
 from app.tests.conftest import DEFAULT_USER_PASS, DEFAULT_USER_EMAIL, DEFAULT_USER_NAME, USER_CREATE_DATA
+from app.tests.urls import urls
 from conftest import get_auth_header
 
 
@@ -88,28 +88,28 @@ async def test_failed_login_user_does_not_exist(default_user, client):
 
 
 @pytest.mark.asyncio
-async def test_login_with_refresh_token(client, token_pair):
+async def test_revoke_tokens(client, token_pair):
     response = await client.post(urls.revoke_token, cookies=token_pair.dict())
     assert response.status_code == status.HTTP_200_OK
     assert AccessTokenOut(**response.json())
 
 
 @pytest.mark.asyncio
-async def test_failed_refreshing_token_if_refresh_token_expired(client, token_pair, default_user):
+async def test_failed_revoking_token_if_refresh_token_expired(client, token_pair, default_user):
     await RefreshTokens.change_expire_term(default_user.id, token_pair.refresh_token, time.time() - 100)
     response = await client.post(urls.revoke_token, cookies=token_pair.dict())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.asyncio
-async def test_failed_refreshing_token_if_invalid_access_token(client, token_pair):
+async def test_failed_revoking_token_if_invalid_access_token(client, token_pair):
     token_pair.access_token = token_pair.access_token + "_invalid"
     response = await client.post(urls.revoke_token, cookies=token_pair.dict())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.asyncio
-async def test_failed_refreshing_token_if_access_token_belongs_to_another_user(client, token_pair, second_user):
+async def test_failed_revoking_token_if_access_token_belongs_to_another_user(client, token_pair, second_user):
     another_access_token = await RefreshTokens.create(user_id=second_user.id)
     token_pair.access_token = another_access_token.body
     response = await client.post(urls.revoke_token, cookies=token_pair.dict())
@@ -144,3 +144,9 @@ async def test_failed_get_private_user_data_without_token(client, token_pair):
     response = await client.get(urls.read_user_me)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert DEFAULT_USER_EMAIL not in response.text
+
+
+@pytest.mark.asyncio
+async def test_logout(client, token_pair):
+    response = await client.post(urls.logout, cookies=token_pair.dict())
+    assert response.status_code == status.HTTP_204_NO_CONTENT

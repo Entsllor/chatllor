@@ -3,7 +3,8 @@ import pytest
 from app import crud, models
 from app.crud import RefreshTokens, AccessTokens
 from app.crud.base import update_instance
-from app.services.auth import get_user_by_access_token, revoke_tokens, authorize_by_username_and_password
+from app.services.auth import get_user_by_access_token, revoke_tokens, authorize_by_username_and_password, \
+    delete_refresh_token
 from app.tests.conftest import DEFAULT_USER_PASS
 from app.utils import exceptions
 
@@ -109,3 +110,50 @@ async def test_failed_authorize_by_username_and_password_with_incorrect_password
 async def test_failed_authorize_by_username_and_password_with_incorrect_username(default_user):
     with pytest.raises(exceptions.IncorrectLoginOrPassword):
         await authorize_by_username_and_password("another" + default_user.username, DEFAULT_USER_PASS)
+
+
+@pytest.mark.asyncio
+async def test_delete_refresh_token(token_pair):
+    is_deleted = await delete_refresh_token(
+        access_token_body=token_pair.access_token,
+        refresh_token_body=token_pair.refresh_token
+    )
+    assert is_deleted
+
+
+@pytest.mark.asyncio
+async def test_delete_refresh_token_with_expired_access_token(token_pair, default_user):
+    expired_access_token = await AccessTokens.create(user_id=default_user.id, expire_delta=-10)
+    is_deleted = await delete_refresh_token(
+        access_token_body=expired_access_token.body,
+        refresh_token_body=token_pair.refresh_token
+    )
+    assert is_deleted
+
+
+@pytest.mark.asyncio
+async def test_delete_refresh_token_if_expired(access_token, default_user):
+    expired_refresh_token = await RefreshTokens.create(user_id=default_user.id, expire_delta=-10)
+    is_deleted = await delete_refresh_token(
+        access_token_body=access_token.body,
+        refresh_token_body=expired_refresh_token.body
+    )
+    assert is_deleted
+
+
+@pytest.mark.asyncio
+async def test_failed_delete_invalid_refresh_token(token_pair):
+    is_deleted = await delete_refresh_token(
+        access_token_body=token_pair.access_token,
+        refresh_token_body=token_pair.refresh_token + "_invalid"
+    )
+    assert not is_deleted
+
+
+@pytest.mark.asyncio
+async def test_failed_delete_refresh_token_if_invalid_access_token(token_pair):
+    is_logout = await delete_refresh_token(
+        access_token_body=token_pair.access_token + "_invalid",
+        refresh_token_body=token_pair.refresh_token
+    )
+    assert not is_logout
