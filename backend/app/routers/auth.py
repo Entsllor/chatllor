@@ -34,7 +34,7 @@ async def login_by_password(response: Response, form_data: OAuth2PasswordRequest
 @router.post('/revoke', response_model=AccessTokenOut)
 async def revoke_token(response: Response, access_token: str = Cookie(None), refresh_token: str = Cookie(None)):
     if not access_token or not refresh_token:
-        raise exceptions.InvalidAuthTokens
+        raise exceptions.CredentialsException
     access_token, refresh_token = await auth.revoke_tokens(
         access_token_body=access_token,
         refresh_token_body=refresh_token
@@ -62,3 +62,4 @@ async def logout(response: Response, access_token: str = Cookie(None), refresh_t
     await auth.delete_refresh_token(access_token_body=access_token, refresh_token_body=refresh_token)
     response.delete_cookie(key="access_token", httponly=True, path=AUTH_PREFIX)
     response.delete_cookie(key="refresh_token", httponly=True, path=AUTH_PREFIX)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
