@@ -3,7 +3,6 @@ from fastapi import FastAPI, Depends
 from fastapi.exception_handlers import http_exception_handler
 from starlette.middleware.cors import CORSMiddleware
 
-from app.core.database import Base, engine
 from app.core.settings import settings
 from app.routers import users, auth, messages, chats, chat_users
 from app.utils import exceptions
@@ -23,12 +22,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
-
-@app.on_event("startup")
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
 
 @app.exception_handler(exceptions.BaseAppException)

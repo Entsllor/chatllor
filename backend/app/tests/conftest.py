@@ -31,7 +31,7 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 def db_engine() -> AsyncEngine:
-    engine = create_db_engine(settings.TEST_DB_URL)
+    engine = create_db_engine(settings.DB_URL)
     yield engine
     engine.dispose()
 

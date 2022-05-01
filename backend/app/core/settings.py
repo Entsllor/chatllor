@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "debug"
     DB_URL: str = "postgresql+asyncpg:///user:pass@localhost:5432/postgres"
     DB_ECHO: bool = False  # if True, the Engine will log all queries
-    TEST_DB_URL: str = "postgresql+asyncpg:///user:pass@localhost:5432/test"
     JWT_ALGORITHM: str = "HS256"
     SECRET_KEY: str
     ALEMBIC_PATH: Path | str = BASE_PATH.parent.joinpath("migrations")
@@ -29,6 +28,13 @@ class Settings(BaseSettings):
 
 class TestSettings(Settings):
     HASHING_SCHEMAS: list = ["md5_crypt"]
+    DB_URL: str = "postgresql+asyncpg:///user:pass@localhost:5432/test"
+    SECRET_KEY = "TESTING"
+
+    class Config:
+        case_sensitive = True
+        env_file = BASE_PATH.joinpath('.env')
+        env_prefix = "APP_TEST_"
 
 
 APP_MODE = os.getenv("APP_MODE", "dev").lower()
