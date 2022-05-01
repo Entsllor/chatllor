@@ -62,7 +62,7 @@ def upgrade():
     op.create_index(op.f('ix_message_created_at'), 'message', ['created_at'], unique=False)
     op.create_index(op.f('ix_message_id'), 'message', ['id'], unique=False)
     op.create_table('refresh_token',
-    sa.Column('body', sa.String(length=63), nullable=False),
+    sa.Column('body', sa.CHAR(length=127), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('expire_at', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
