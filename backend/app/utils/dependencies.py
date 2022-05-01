@@ -1,11 +1,11 @@
 from fastapi import Depends
 
 from app import models
-from app.core.database import async_session, AsyncSession, db_context
+from app.core.database import async_session, db_context
 from app.services.auth import oauth2_scheme, get_user_by_access_token
 
 
-async def get_db() -> AsyncSession:
+async def get_db():
     session = async_session()
     try:
         db_context.set(session)

@@ -39,6 +39,8 @@ cryptography==36.0.1
     # via python-jose
 ecdsa==0.17.0
     # via python-jose
+faker==13.6.0
+    # via -r requirements.in
 fastapi==0.73.0
     # via -r requirements.in
 greenlet==1.1.2
@@ -90,6 +92,8 @@ pytest==7.0.1
     #   pytest-asyncio
 pytest-asyncio==0.18.2
     # via -r requirements.in
+python-dateutil==2.8.2
+    # via faker
 python-dotenv==0.19.2
     # via -r requirements.in
 python-jose[cryptography]==3.3.0
@@ -106,6 +110,7 @@ six==1.16.0
     # via
     #   bcrypt
     #   ecdsa
+    #   python-dateutil
     #   python-multipart
 sniffio==1.2.0
     # via

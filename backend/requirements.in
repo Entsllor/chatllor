@@ -1,7 +1,5 @@
 fastapi>=0.73
 uvicorn>=0.17.4
-pip-tools>=6.5
-python-dotenv>=0.19.2
 python-multipart>=0.0.5
 requests>=2.27
 
@@ -18,3 +16,8 @@ asyncpg>=0.25
 pytest>=7.0.1
 pytest-asyncio>=0.18.2
 httpx>=0.22
+
+#utils
+faker>=13.6
+pip-tools>=6.5
+python-dotenv>=0.19.2
