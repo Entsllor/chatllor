@@ -13,7 +13,7 @@ def create_db_engine(db_url):
     return create_async_engine(
         url=db_url,
         future=True,
-        echo=True,
+        echo=settings.DB_ECHO,
         connect_args=connect_args
     )
 

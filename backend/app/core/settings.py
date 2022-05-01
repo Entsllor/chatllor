@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     HOST: str = "127.0.0.1"
     LOG_LEVEL: str = "debug"
     DB_URL: str = "postgresql+asyncpg:///user:pass@localhost:5432/postgres"
+    DB_ECHO: bool = False  # if True, the Engine will log all queries
     TEST_DB_URL: str = "postgresql+asyncpg:///user:pass@localhost:5432/test"
     JWT_ALGORITHM: str = "HS256"
     SECRET_KEY: str
