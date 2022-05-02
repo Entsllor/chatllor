@@ -1,5 +1,4 @@
 from fastapi import APIRouter, status, Depends
-from sqlalchemy.exc import IntegrityError
 
 from app.crud import Users
 from app.schemas.users import UserPrivate, UserCreate, UserPublic, User
@@ -13,10 +12,9 @@ router = APIRouter(prefix="/users")
 
 @router.post("/", response_model=UserPrivate, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserCreate):
-    try:
-        created = await Users.create(**user.dict())
-    except IntegrityError:
+    if await Users.get_one(username=user.username):
         raise exceptions.ExpectedUniqueUsername
+    created = await Users.create(**user.dict())
     return created
 
 

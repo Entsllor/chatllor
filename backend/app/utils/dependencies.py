@@ -10,11 +10,6 @@ async def get_db():
     try:
         db_context.set(session)
         yield session
-    except Exception as exc:
-        db_context.set(None)
-        await session.rollback()
-        raise exc
-    else:
         await session.commit()
     finally:
         await session.close()
