@@ -39,6 +39,7 @@ def db_engine() -> AsyncEngine:
 @pytest.fixture(scope="session")
 async def db_tables(db_engine) -> AsyncConnection:
     async with db_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with db_engine.begin() as conn:

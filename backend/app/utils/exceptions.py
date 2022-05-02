@@ -65,3 +65,10 @@ class InstanceNotFound(BaseAppException):
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Failed to find this object"
     )
+
+
+class ExpectedUniqueUsername(BaseAppException):
+    as_http = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Username is already taken",
+    )

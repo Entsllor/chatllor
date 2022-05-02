@@ -1,8 +1,9 @@
-from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi import APIRouter, status, Depends
 from sqlalchemy.exc import IntegrityError
 
 from app.crud import Users
 from app.schemas.users import UserPrivate, UserCreate, UserPublic, User
+from app.utils import exceptions
 from app.utils.dependencies import get_current_active_user
 from app.utils.filtering import filter_by_model
 from app.utils.options import GetManyOptions
@@ -15,7 +16,7 @@ async def create_user(user: UserCreate):
     try:
         created = await Users.create(**user.dict())
     except IntegrityError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"This username '{user.username}' is already taken.")
+        raise exceptions.ExpectedUniqueUsername
     return created
 
 
