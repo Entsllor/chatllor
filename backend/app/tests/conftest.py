@@ -47,11 +47,16 @@ async def db_tables(db_engine) -> AsyncConnection:
         await conn.run_sync(Base.metadata.drop_all)
 
 
+async def async_pass(*_, **__):
+    """Do nothing but asynchronously"""
+
+
 @pytest.fixture(scope="function")
 def db(db_tables, db_engine, event_loop: AbstractEventLoop) -> AsyncSession:
     session = AsyncSession(bind=db_engine)
     try:
         db_context.set(session)
+        session.commit = async_pass  # don't commit while testing
         yield session
     finally:
         db_context.set(None)
@@ -80,6 +85,7 @@ def get_test_db_dependency(test_db_session):
         db_context.set(None)
 
     return inner
+
 
 # end of test client utils
 

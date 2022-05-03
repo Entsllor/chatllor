@@ -10,14 +10,13 @@ async def get_db():
     try:
         db_context.set(session)
         yield session
-        await session.commit()
     finally:
         await session.close()
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> models.User:
+async def get_current_user(token: str = Depends(oauth2_scheme), _=Depends(get_db)) -> models.User:
     return await get_user_by_access_token(token_body=token, only_active=False)
 
 
-async def get_current_active_user(token: str = Depends(oauth2_scheme)) -> models.User:
+async def get_current_active_user(token: str = Depends(oauth2_scheme), _=Depends(get_db)) -> models.User:
     return await get_user_by_access_token(token_body=token, only_active=True)

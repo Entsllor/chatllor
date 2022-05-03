@@ -1,14 +1,13 @@
 import uvicorn
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.exception_handlers import http_exception_handler
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.settings import settings
 from app.routers import users, auth, messages, chats, chat_users
 from app.utils import exceptions
-from app.utils.dependencies import get_db
 
-app = FastAPI(dependencies=[Depends(get_db)])
+app = FastAPI()
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(messages.router)
