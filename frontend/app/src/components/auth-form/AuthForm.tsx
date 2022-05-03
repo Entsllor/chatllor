@@ -8,27 +8,30 @@ const AuthForm: React.FC = () => {
 
   return <div className="AuthForm">
     <input
+      className="form-control"
       type="text"
       placeholder="username"
       onChange={event => setUsername(event.target.value)}
     />
     <input
+      className="form-control"
       type="text"
       placeholder="email"
       onChange={event => setEmail(event.target.value)}
     />
     <input
+      className="form-control"
       type="password"
       placeholder="password"
       onChange={event => setPassword(event.target.value)}
     />
-    <button className="btn" onClick={e => AuthService.login(username, password)}>
+    <button className="btn btn-primary" onClick={e => AuthService.login(username, password)}>
       Login
     </button>
-    <button className="btn" onClick={e => AuthService.registration(username, email, password)}>
+    <button className="btn btn-primary" onClick={e => AuthService.registration(username, email, password)}>
       Registration
     </button>
-    <button className="btn" onClick={e => AuthService.logout()}>
+    <button className="btn btn-danger" onClick={e => AuthService.logout()}>
       Logout
     </button>
   </div>;
