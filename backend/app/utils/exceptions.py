@@ -1,8 +1,13 @@
 from fastapi import HTTPException, status
+from fastapi.exception_handlers import http_exception_handler
 
 
 class BaseAppException(Exception):
     as_http: HTTPException
+
+
+async def app_exception_handler(request, exc: BaseAppException):
+    return await http_exception_handler(request, exc.as_http)
 
 
 class IncorrectLoginOrPassword(BaseAppException):

@@ -1,6 +1,7 @@
 from argparse import Namespace
 
-from app.main import app
+from app.core.settings import test_settings
+from app.main import create_app
 
 
 class ApiUrl(str):
@@ -16,4 +17,5 @@ class ApiUrl(str):
         return self.path
 
 
+app = create_app(test_settings)
 urls = Namespace(**{getattr(rout, "name"): ApiUrl(getattr(rout, "path")) for rout in app.routes})

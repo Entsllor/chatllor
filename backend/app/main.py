@@ -1,32 +1,35 @@
 import uvicorn
 from fastapi import FastAPI
-from fastapi.exception_handlers import http_exception_handler
 from starlette.middleware.cors import CORSMiddleware
 
-from app.core.settings import settings
+from app.core.settings import settings, Settings
 from app.routers import users, auth, messages, chats, chat_users
 from app.utils import exceptions
+from app.utils.exceptions import app_exception_handler
 
-app = FastAPI()
-app.include_router(users.router)
-app.include_router(auth.router)
-app.include_router(messages.router)
-app.include_router(chats.router)
-app.include_router(chat_users.router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"]
-)
+app = FastAPI()  # create this for pycharm fastapi runner
 
 
-@app.exception_handler(exceptions.BaseAppException)
-async def app_exception_handler(request, exc: exceptions.BaseAppException):
-    return await http_exception_handler(request, exc.as_http)
+def create_app(app_settings: Settings) -> FastAPI:
+    new_app = FastAPI()
+    new_app.include_router(users.router)
+    new_app.include_router(auth.router)
+    new_app.include_router(messages.router)
+    new_app.include_router(chats.router)
+    new_app.include_router(chat_users.router)
 
+    new_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=app_settings.ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"]
+    )
+    new_app.add_exception_handler(exceptions.BaseAppException, app_exception_handler)
+    return new_app
+
+
+app = create_app(settings)  # noqa
 
 if __name__ == '__main__':
     uvicorn.run(

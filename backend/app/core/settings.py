@@ -38,8 +38,10 @@ class TestSettings(Settings):
 
 
 APP_MODE = os.getenv("APP_MODE", "dev").lower()
+test_settings = TestSettings()
+dev_settings = Settings()
 
 if "test" in APP_MODE:
-    settings = TestSettings()
+    settings = test_settings
 else:
-    settings = Settings()
+    settings = dev_settings
