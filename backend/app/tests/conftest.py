@@ -6,6 +6,8 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncConnection, AsyncEngine
 
+from app.utils.dependencies import get_db
+
 os.environ.setdefault("APP_MODE", "test")
 from app import models
 from app.core.database import create_db_engine, Base, db_context
@@ -13,7 +15,6 @@ from app.core.settings import settings
 from app.crud import Users, Chats, ChatUsers, AccessTokens, RefreshTokens
 from app.main import app
 from app.schemas import users, tokens
-from app.utils.dependencies import get_db
 
 DEFAULT_USER_PASS = "SomeUserPassword"
 DEFAULT_USER_EMAIL = "defaultUser@example.com"
@@ -59,10 +60,41 @@ def db(db_tables, db_engine, event_loop: AbstractEventLoop) -> AsyncSession:
         event_loop.run_until_complete(session.close())
 
 
+# Test client utils
+
+async def clean_db_context_before_request(_):
+    db_context.set(None)
+
+
+def set_db_context_after_response(session):
+    async def inner(_):
+        db_context.set(session)
+
+    return inner
+
+
+def get_test_db_dependency(test_db_session):
+    async def inner():
+        db_context.set(test_db_session)
+        yield test_db_session
+        db_context.set(None)
+
+    return inner
+
+# end of test client utils
+
+
 @pytest.fixture(scope="function")
-async def client(db, event_loop) -> AsyncClient:
-    app.dependency_overrides[get_db] = lambda: db
-    async with AsyncClient(app=app, base_url="http://test/") as test_client:
+async def client(db) -> AsyncClient:
+    app.dependency_overrides[get_db] = get_test_db_dependency(db)
+    async with AsyncClient(
+            app=app,
+            base_url="http://test/",
+            event_hooks={
+                'request': [clean_db_context_before_request],
+                'response': [set_db_context_after_response(db)]
+            }
+    ) as test_client:
         yield test_client
 
 
