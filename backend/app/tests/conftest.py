@@ -6,15 +6,18 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncConnection, AsyncEngine
 
+# use only testing settings
+os.environ.setdefault("APP_MODE", "test")  # noqa
+
 from app import models
 from app.core.database import create_db_engine, Base, db_context
 from app.core.settings import test_settings
 from app.crud import Users, Chats, ChatUsers, AccessTokens, RefreshTokens
 from app.main import create_app
 from app.schemas import users, tokens
+from app.utils.app_utils import get_app_urls
 from app.utils.dependencies import get_db
 
-os.environ.setdefault("APP_MODE", "test")
 DEFAULT_USER_PASS = "SomeUserPassword"
 DEFAULT_USER_EMAIL = "defaultUser@example.com"
 DEFAULT_USER_NAME = "SomeUserName"
@@ -91,6 +94,11 @@ def get_test_db_dependency(test_db_session):
 @pytest.fixture(scope="session")
 async def app():
     yield create_app(test_settings)
+
+
+@pytest.fixture(scope='session')
+async def urls(app):
+    yield get_app_urls(app)
 
 
 @pytest.fixture(scope="function")

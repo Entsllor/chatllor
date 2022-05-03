@@ -1,7 +1,6 @@
 from argparse import Namespace
 
-from app.core.settings import test_settings
-from app.main import create_app
+from fastapi import FastAPI
 
 
 class ApiUrl(str):
@@ -17,5 +16,5 @@ class ApiUrl(str):
         return self.path
 
 
-app = create_app(test_settings)
-urls = Namespace(**{getattr(rout, "name"): ApiUrl(getattr(rout, "path")) for rout in app.routes})
+def get_app_urls(app: FastAPI):
+    return Namespace(**{getattr(rout, "name"): ApiUrl(getattr(rout, "path")) for rout in app.routes})
