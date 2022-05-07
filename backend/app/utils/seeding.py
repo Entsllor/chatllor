@@ -40,7 +40,7 @@ async def create_chat_with_users_and_messages():
     users_ids = []
     # add some existing users to chat
     if users_from_others_chat:
-        for user in fake.random_choices(users_from_others_chat, 30):
+        for user in fake.random_elements(users_from_others_chat, unique=True)[:20]:
             users_ids.append(user.id)
             await user_join_chat(chat_id=chat.id, user_id=user.id)
     # create new users and add them to chat
@@ -60,8 +60,9 @@ async def create_filled_chats():
 
 def main():
     async def db_seeding():
-        async for _ in get_db():
+        async for session in get_db():
             await create_filled_chats()
+            await session.commit()
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(db_seeding())
