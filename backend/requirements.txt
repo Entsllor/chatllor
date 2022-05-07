@@ -4,19 +4,19 @@
 #
 #    pip-compile
 #
-alembic==1.7.6
+alembic==1.7.7
     # via -r requirements.in
 anyio==3.5.0
     # via
     #   httpcore
     #   starlette
-asgiref==3.5.0
+asgiref==3.5.1
     # via uvicorn
 asyncpg==0.25.0
     # via -r requirements.in
 attrs==21.4.0
     # via pytest
-bcrypt==3.2.0
+bcrypt==3.2.2
     # via passlib
 certifi==2021.10.8
     # via
@@ -31,17 +31,17 @@ charset-normalizer==2.0.12
     # via
     #   httpx
     #   requests
-click==8.0.3
+click==8.1.3
     # via
     #   pip-tools
     #   uvicorn
-cryptography==36.0.1
+cryptography==37.0.2
     # via python-jose
 ecdsa==0.17.0
     # via python-jose
-faker==13.6.0
+faker==13.7.0
     # via -r requirements.in
-fastapi==0.73.0
+fastapi==0.76.0
     # via -r requirements.in
 greenlet==1.1.2
     # via sqlalchemy
@@ -62,7 +62,7 @@ iniconfig==1.1.1
     # via pytest
 mako==1.2.0
     # via alembic
-markupsafe==2.1.0
+markupsafe==2.1.1
     # via mako
 packaging==21.3
     # via pytest
@@ -70,7 +70,7 @@ passlib[bcrypt]==1.7.4
     # via -r requirements.in
 pep517==0.12.0
     # via pip-tools
-pip-tools==6.5.1
+pip-tools==6.6.0
     # via -r requirements.in
 pluggy==1.0.0
     # via pytest
@@ -84,17 +84,17 @@ pycparser==2.21
     # via cffi
 pydantic==1.9.0
     # via fastapi
-pyparsing==3.0.7
+pyparsing==3.0.8
     # via packaging
-pytest==7.0.1
+pytest==7.1.2
     # via
     #   -r requirements.in
     #   pytest-asyncio
-pytest-asyncio==0.18.2
+pytest-asyncio==0.18.3
     # via -r requirements.in
 python-dateutil==2.8.2
     # via faker
-python-dotenv==0.19.2
+python-dotenv==0.20.0
     # via -r requirements.in
 python-jose[cryptography]==3.3.0
     # via -r requirements.in
@@ -108,7 +108,6 @@ rsa==4.8
     # via python-jose
 six==1.16.0
     # via
-    #   bcrypt
     #   ecdsa
     #   python-dateutil
     #   python-multipart
@@ -117,21 +116,21 @@ sniffio==1.2.0
     #   anyio
     #   httpcore
     #   httpx
-sqlalchemy==1.4.31
+sqlalchemy==1.4.36
     # via
     #   -r requirements.in
     #   alembic
-starlette==0.17.1
+starlette==0.18.0
     # via fastapi
 tomli==2.0.1
     # via
     #   pep517
     #   pytest
-typing-extensions==4.0.1
+typing-extensions==4.2.0
     # via pydantic
-urllib3==1.26.8
+urllib3==1.26.9
     # via requests
-uvicorn==0.17.4
+uvicorn==0.17.6
     # via -r requirements.in
 wheel==0.37.1
     # via pip-tools
