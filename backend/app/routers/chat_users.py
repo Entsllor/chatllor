@@ -1,10 +1,16 @@
 from fastapi import Depends, APIRouter
 
-from app.schemas.chat_users import ChatUserJoined
+from app import crud
+from app.schemas.chat_users import ChatUserJoined, ChatUserDetail
 from app.services import chats
 from app.utils.dependencies import get_current_active_user, get_db
 
 router = APIRouter(prefix="/chats")
+
+
+@router.get('/my/', dependencies=[Depends(get_db)], response_model=list[ChatUserDetail])
+async def read_my_chats(user=Depends(get_current_active_user)):
+    return await crud.ChatUsers.get_user_chats(user_id=user.id)
 
 
 @router.post("/{chat_id}/users/", response_model=ChatUserJoined)

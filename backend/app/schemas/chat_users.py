@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from app.schemas.base import BaseScheme
+from .chats import ChatOut
 
 
 class ChatUserBase(BaseScheme):
@@ -14,3 +15,8 @@ class ChatUserJoin(ChatUserBase):
 
 class ChatUserJoined(ChatUserJoin):
     joined_at: datetime
+
+
+class ChatUserDetail(BaseScheme):
+    joined_at: datetime
+    chat: ChatOut
