@@ -39,12 +39,6 @@ const AuthForm: React.FC<{ handleAccessToken: CallableFunction }> = (props) => {
             <button className="btn btn-primary" onClick={e => AuthService.registration(username, email, password)}>
               Registration
             </button>
-            <button className="btn btn-danger" onClick={async () => {
-              await AuthService.logout();
-              props.handleAccessToken(localStorage.getItem('accessToken'))
-            }}>
-              Logout
-            </button>
           </div>
         </form>
       </div>

@@ -1,17 +1,17 @@
 import React, {useState} from 'react';
 import AuthForm from "../auth-form/AuthForm";
-import AuthService from "../../services/auth";
-import LogoutButton from "../logout_button/LogoutButton";
+import Header from "../header/Header";
 
 const App = () => {
   const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'))
 
   return (
     <div className="App">
-      <div className="container">
+      <Header handleAccessToken={setAccessToken} accessToken={accessToken}/>
+      <div className="container mt-3">
         {!accessToken ?
           <AuthForm handleAccessToken={setAccessToken}/> :
-          <LogoutButton accessTokenHandler={setAccessToken}/>
+          <div></div>
         }
       </div>
     </div>
