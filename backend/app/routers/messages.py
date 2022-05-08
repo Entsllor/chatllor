@@ -9,7 +9,7 @@ router = APIRouter(prefix="/chats")
 
 @router.get("/{chat_id}/messages/", response_model=list[MessageOut], dependencies=[Depends(get_db)])
 async def read_messages(chat_id: int, user=Depends(get_current_active_user)):
-    return await messages.read_messages(user_id=user.id, chat_id=chat_id)
+    return await messages.user_read_chat_messages(user_id=user.id, chat_id=chat_id)
 
 
 @router.post("/{chat_id}/messages/", response_model=MessageOut, status_code=201)

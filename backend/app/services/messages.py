@@ -20,7 +20,7 @@ async def delete_message_from_chat(user_id: int, message_id: int) -> models.Mess
     return await crud.Messages.delete(id=message.id)
 
 
-async def read_messages(user_id: int, chat_id: int) -> list[models.Message]:
+async def user_read_chat_messages(user_id: int, chat_id: int) -> list[models.Message]:
     chat_user = await crud.ChatUsers.get_one(user_id=user_id, chat_id=chat_id)
     if not chat_user:
         raise exceptions.Forbidden

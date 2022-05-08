@@ -57,7 +57,7 @@ async def test_user_can_read_message_from_chat(chat_with_default_user, default_u
         chat_id=chat_with_default_user.id,
         text="msg_2"
     )
-    chat_messages = await messages.read_messages(
+    chat_messages = await messages.user_read_chat_messages(
         user_id=default_user.id,
         chat_id=chat_with_default_user.id)
     assert chat_messages == [message_1, message_2]
@@ -80,5 +80,5 @@ async def test_user_cannot_read_messages_created_before_his_joining(chat_with_de
         chat_id=chat_with_default_user.id,
         text="msg_3"
     )
-    chat_messages = await messages.read_messages(user_id=second_user.id, chat_id=chat_with_default_user.id)
+    chat_messages = await messages.user_read_chat_messages(user_id=second_user.id, chat_id=chat_with_default_user.id)
     assert chat_messages == [message_2, message_3]
