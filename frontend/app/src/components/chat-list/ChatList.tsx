@@ -14,7 +14,7 @@ const ChatList: React.FC<{handleCurrentChat: CallableFunction}> = (props) => {
         {userChats.map((UserChat) =>
           <div key={UserChat.chat.id}>
             <button
-              className='btn btn-success border-0 w-25'
+              className='btn btn-success border-0 w-100'
               onClick={() => props.handleCurrentChat(UserChat.chat)}>
               {UserChat.chat.name}
             </button>

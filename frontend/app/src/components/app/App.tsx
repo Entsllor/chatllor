@@ -2,7 +2,8 @@ import React, {useState} from 'react';
 import AuthForm from "../auth-form/AuthForm";
 import Header from "../header/Header";
 import ChatList from "../chat-list/ChatList";
-import {Chat, ChatUser} from "../../interfaces/chat";
+import {Chat} from "../../interfaces/chat";
+import MessagesField from "../messages-field/MessagesField";
 
 const App = () => {
   const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'))
@@ -16,7 +17,14 @@ const App = () => {
           // if not is authenticated 
           <AuthForm handleAccessToken={setAccessToken}/> :
           // if is authenticated
-          <ChatList handleCurrentChat={setCurrentChat}/>
+          <div className='row row-cols-2'>
+            <div className='col col-4'>
+              <ChatList handleCurrentChat={setCurrentChat}/>
+            </div>
+            <div className='col col-8'>
+              {currentChat?.id && <MessagesField chatId={currentChat.id}/>}
+            </div>
+          </div>
         }
       </div>
     </div>

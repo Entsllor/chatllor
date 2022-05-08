@@ -1,6 +1,6 @@
 import api from "./base";
 import {AxiosResponse} from "axios";
-import {Chat, ChatUser} from "../interfaces/chat";
+import {ChatUser} from "../interfaces/chat";
 
 export default class ChatService {
   static async fetchUserChats(): Promise<AxiosResponse<ChatUser[]>> {
