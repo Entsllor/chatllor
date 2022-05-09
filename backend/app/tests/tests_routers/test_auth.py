@@ -7,7 +7,8 @@ from app.crud import Users, RefreshTokens, AccessTokens
 from app.schemas.tokens import AccessTokenOut
 from app.schemas.users import UserPrivate
 from app.tests.conftest import DEFAULT_USER_PASS, DEFAULT_USER_EMAIL, DEFAULT_USER_NAME, USER_CREATE_DATA
-from conftest import get_auth_header, urls, is_valid_schema
+from .conftest import get_auth_header, urls
+from app.utils.schemas import is_valid_schema
 
 
 @pytest.mark.asyncio

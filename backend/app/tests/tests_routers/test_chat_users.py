@@ -2,8 +2,8 @@ import pytest
 from fastapi import status
 
 from app.schemas.chat_users import ChatUserJoined
-from conftest import is_valid_schema
-from ..conftest import urls
+from app.utils.schemas import is_valid_schema
+from .conftest import urls
 
 
 @pytest.mark.asyncio

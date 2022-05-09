@@ -1,8 +1,8 @@
 import pytest
 from fastapi import status
 
-from conftest import is_valid_schema
-from ..conftest import urls
+from app.utils.schemas import is_valid_schema
+from .conftest import urls
 from ...crud import Chats
 from ...schemas.chats import ChatCreate, ChatOut
 

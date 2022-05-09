@@ -2,10 +2,10 @@ import pytest
 from fastapi import status
 
 from app import schemas
-from conftest import is_valid_schema
+from app.utils.schemas import is_valid_schema
 from ...crud import Messages
 from ...services import chats
-from ..conftest import urls
+from .conftest import urls
 
 MESSAGE_CREATE_DATA = schemas.messages.MessageCreate(body="__MESSAGE_TEXT__")
 
