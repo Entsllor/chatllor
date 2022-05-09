@@ -24,6 +24,8 @@ DEFAULT_USER_NAME = "SomeUserName"
 AUTH_BEARER = "Authorization: Bearer {}"
 USER_CREATE_DATA = users.UserCreate(username=DEFAULT_USER_NAME, password=DEFAULT_USER_PASS, email=DEFAULT_USER_EMAIL)
 
+urls = get_app_urls(create_app(test_settings))
+
 
 @pytest.fixture(scope="session", autouse=True)
 def event_loop():
@@ -94,11 +96,6 @@ def get_test_db_dependency(test_db_session):
 @pytest.fixture(scope="session")
 async def app():
     yield create_app(test_settings)
-
-
-@pytest.fixture(scope='session')
-async def urls(app):
-    yield get_app_urls(app)
 
 
 @pytest.fixture(scope="function")
