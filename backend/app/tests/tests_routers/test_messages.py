@@ -28,7 +28,7 @@ async def test_delete_self_message_from_chat(default_user, chat_with_default_use
         urls.delete_message(chat_id=chat_with_default_user.id, message_id=message.id),
         headers=auth_header
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
 @pytest.mark.asyncio

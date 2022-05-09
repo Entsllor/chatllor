@@ -27,8 +27,7 @@ async def test_failed_create_chat_unauthorized(client, auth_header):
 @pytest.mark.asyncio
 async def test_delete_chat(client, auth_header, chat_with_default_user):
     response = await client.delete(url=urls.delete_chat(chat_id=chat_with_default_user.id), headers=auth_header)
-    # TODO should be 204
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not await Chats.get_one(id=chat_with_default_user.id)
 
 

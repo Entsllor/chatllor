@@ -15,7 +15,7 @@ async def create_chat(chat: ChatCreate, user=Depends(get_current_active_user), d
     return db_chat
 
 
-@router.delete("/{chat_id}", status_code=200)
+@router.delete("/{chat_id}", status_code=204)
 async def delete_chat(chat_id: int, user=Depends(get_current_active_user), db=Depends(get_db)):
     if await chats.user_delete_a_chat(user_id=user.id, chat_id=chat_id):
         await db.commit()

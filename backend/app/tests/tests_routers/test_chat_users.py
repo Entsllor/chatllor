@@ -22,7 +22,7 @@ async def test_failed_user_join_not_existing_chat(auth_header, client):
 @pytest.mark.asyncio
 async def test_user_leave_chat(auth_header, chat_with_default_user, client):
     response = await client.delete(url=urls.leave_chat(chat_id=chat_with_default_user.id), headers=auth_header)
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
 @pytest.mark.asyncio

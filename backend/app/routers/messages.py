@@ -20,7 +20,7 @@ async def create_message(
     return db_message
 
 
-@router.delete("/{chat_id}/messages/{message_id}", status_code=200)
+@router.delete("/{chat_id}/messages/{message_id}", status_code=204)
 async def delete_message(message_id: int, user=Depends(get_current_active_user), db=Depends(get_db)):
     if await messages.delete_message_from_chat(user_id=user.id, message_id=message_id):
         await db.commit()
