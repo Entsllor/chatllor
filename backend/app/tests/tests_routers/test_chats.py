@@ -1,9 +1,10 @@
 import pytest
 from fastapi import status
 
+from conftest import is_valid_schema
+from ..conftest import urls
 from ...crud import Chats
 from ...schemas.chats import ChatCreate, ChatOut
-from ..conftest import urls
 
 CHAT_CREATE_DATA = ChatCreate(name="_TEST_CHAT")
 
@@ -14,6 +15,7 @@ async def test_create_chat(client, auth_header):
     chat = response.json()
     assert response.status_code == status.HTTP_201_CREATED
     assert chat['name'] == CHAT_CREATE_DATA.name
+    assert is_valid_schema(ChatOut, chat)
 
 
 @pytest.mark.asyncio
@@ -25,6 +27,7 @@ async def test_failed_create_chat_unauthorized(client, auth_header):
 @pytest.mark.asyncio
 async def test_delete_chat(client, auth_header, chat_with_default_user):
     response = await client.delete(url=urls.delete_chat(chat_id=chat_with_default_user.id), headers=auth_header)
+    # TODO should be 204
     assert response.status_code == status.HTTP_200_OK
     assert not await Chats.get_one(id=chat_with_default_user.id)
 
@@ -47,4 +50,4 @@ async def test_failed_delete_unauthorized(client, auth_header, empty_chat):
 async def test_read_chats(client, empty_chat):
     response = await client.get(url=urls.read_chats)
     assert response.status_code == status.HTTP_200_OK
-    assert [ChatOut.validate(chat) for chat in response.json()]
+    assert is_valid_schema(ChatOut, response.json())

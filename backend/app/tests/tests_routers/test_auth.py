@@ -2,12 +2,12 @@ import time
 
 import pytest
 from fastapi import status
-from pydantic import ValidationError
 
 from app.crud import Users, RefreshTokens, AccessTokens
 from app.schemas.tokens import AccessTokenOut
+from app.schemas.users import UserPrivate
 from app.tests.conftest import DEFAULT_USER_PASS, DEFAULT_USER_EMAIL, DEFAULT_USER_NAME, USER_CREATE_DATA
-from conftest import get_auth_header, urls
+from conftest import get_auth_header, urls, is_valid_schema
 
 
 @pytest.mark.asyncio
@@ -59,7 +59,7 @@ async def test_login(default_user, client):
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
     assert response.status_code == status.HTTP_200_OK
-    assert AccessTokenOut(**response.json())  # validate response content
+    assert is_valid_schema(AccessTokenOut, response.json())
 
 
 @pytest.mark.asyncio
@@ -70,8 +70,7 @@ async def test_failed_login_wrong_password(default_user, client):
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    with pytest.raises(ValidationError):
-        assert AccessTokenOut(**response.json())  # validate response content
+    assert not is_valid_schema(AccessTokenOut, response.json())
 
 
 @pytest.mark.asyncio
@@ -82,15 +81,14 @@ async def test_failed_login_user_does_not_exist(default_user, client):
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    with pytest.raises(ValidationError):
-        assert AccessTokenOut(**response.json())  # validate response content
+    assert not is_valid_schema(AccessTokenOut, response.json())
 
 
 @pytest.mark.asyncio
 async def test_revoke_tokens(client, token_pair):
     response = await client.post(urls.revoke_token, cookies=token_pair.dict())
     assert response.status_code == status.HTTP_200_OK
-    assert AccessTokenOut(**response.json())
+    assert is_valid_schema(AccessTokenOut, response.json())
 
 
 @pytest.mark.asyncio
@@ -119,7 +117,7 @@ async def test_failed_revoking_token_if_access_token_belongs_to_another_user(cli
 async def test_get_private_user_data(client, auth_header):
     response = await client.get(urls.read_user_me, headers=auth_header)
     assert response.status_code == status.HTTP_200_OK
-    assert DEFAULT_USER_EMAIL in response.text
+    assert is_valid_schema(UserPrivate, response.json())
 
 
 @pytest.mark.asyncio
@@ -127,7 +125,7 @@ async def test_failed_get_private_user_data_invalid_token(client, auth_header):
     auth_header_with_invalid_token = auth_header | {"Authorization": auth_header["Authorization"] + "_invalid"}
     response = await client.get(urls.read_user_me, headers=auth_header_with_invalid_token)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert DEFAULT_USER_EMAIL not in response.text
+    assert not is_valid_schema(UserPrivate, response.json())
 
 
 @pytest.mark.asyncio
@@ -135,14 +133,14 @@ async def test_failed_get_private_user_data_expired_token(client, default_user):
     access_token = await AccessTokens.create(user_id=default_user.id, expire_delta=-10)
     response = await client.get(urls.read_user_me, headers=get_auth_header(access_token.body))
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert DEFAULT_USER_EMAIL not in response.text
+    assert not is_valid_schema(UserPrivate, response.json())
 
 
 @pytest.mark.asyncio
 async def test_failed_get_private_user_data_without_token(client, token_pair):
     response = await client.get(urls.read_user_me)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert DEFAULT_USER_EMAIL not in response.text
+    assert not is_valid_schema(UserPrivate, response.json())
 
 
 @pytest.mark.asyncio

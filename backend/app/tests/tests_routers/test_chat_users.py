@@ -1,11 +1,16 @@
 import pytest
 from fastapi import status
+
+from app.schemas.chat_users import ChatUserJoined
+from conftest import is_valid_schema
 from ..conftest import urls
+
 
 @pytest.mark.asyncio
 async def test_user_join_chat(auth_header, empty_chat, client):
     response = await client.post(url=urls.join_chat(chat_id=empty_chat.id), headers=auth_header)
     assert response.status_code == status.HTTP_200_OK
+    assert is_valid_schema(ChatUserJoined, response.json())
 
 
 @pytest.mark.asyncio

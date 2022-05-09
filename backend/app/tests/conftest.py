@@ -1,12 +1,16 @@
 import asyncio
 import os
 from asyncio import AbstractEventLoop
+from typing import Type
 
 import pytest
 from httpx import AsyncClient
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncConnection, AsyncEngine
 
 # use only testing settings
+from app.schemas.base import BaseScheme
+
 os.environ.setdefault("APP_MODE", "test")  # noqa
 
 from app import models
@@ -151,3 +155,13 @@ async def token_pair(default_user, client, access_token) -> tokens.AuthTokensBod
 
 def get_auth_header(access_token_body: str) -> dict:
     return {"Authorization": f"Bearer {access_token_body}"}
+
+
+def is_valid_schema(schema: Type[BaseScheme], data, many=None) -> bool:
+    if many is None:
+        data = [data] if not isinstance(data, list | tuple) else data
+    try:
+        all(map(schema.validate, data))
+    except ValidationError:
+        return False
+    return True

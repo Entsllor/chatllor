@@ -2,6 +2,7 @@ import pytest
 from fastapi import status
 
 from app import schemas
+from conftest import is_valid_schema
 from ...crud import Messages
 from ...services import chats
 from ..conftest import urls
@@ -73,7 +74,7 @@ async def test_read_messages(client, auth_header, chat_with_default_user, second
     await Messages.create(default_user.id, "__test_read_messages_1", chat_id=chat_with_default_user.id)
     await Messages.create(second_user.id, "__test_read_messages_2", chat_id=chat_with_default_user.id)
     response = await client.get(url=urls.read_messages(chat_id=chat_with_default_user.id), headers=auth_header)
-    assert [schemas.messages.UserMessage.validate(message) for message in response.json()]  # response validation
+    assert is_valid_schema(schemas.messages.UserMessage, response.json())
     assert response.status_code == status.HTTP_200_OK
 
 
