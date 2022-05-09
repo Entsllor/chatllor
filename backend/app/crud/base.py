@@ -48,6 +48,8 @@ class BaseCrudDB:
 
 
 def order_by_fields(query: Query, ordering_fields: Iterable[str]) -> Query:
+    # Does not work with aliases
+    # can search by 'body' but not 'message.body' or 'message_body'
     available_field = list(itertools.chain(*[fields.columns.keys() for fields in query.froms]))
     for field_name in ordering_fields:
         order = 'asc'

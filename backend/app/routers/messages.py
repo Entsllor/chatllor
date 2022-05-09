@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 
-from app.schemas.messages import MessageOut, MessageCreate
+from app.schemas.messages import MessageOut, MessageCreate, UserMessage
 from app.services import messages
 from app.utils.dependencies import get_current_active_user, get_db
 
 router = APIRouter(prefix="/chats")
 
 
-@router.get("/{chat_id}/messages/", response_model=list[MessageOut], dependencies=[Depends(get_db)])
+@router.get("/{chat_id}/messages/", response_model=list[UserMessage], dependencies=[Depends(get_db)])
 async def read_messages(chat_id: int, user=Depends(get_current_active_user)):
     return await messages.user_read_chat_messages(user_id=user.id, chat_id=chat_id)
 

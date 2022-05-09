@@ -1,3 +1,6 @@
+from sqlalchemy import select
+from datetime import datetime
+
 from app import models
 from .base import BaseCrudDB, create_instance, get_many_by_query
 from ..utils.options import GetManyOptions
@@ -14,13 +17,12 @@ class MessagesCrud(BaseCrudDB):
         query = self._select.filter_by(**filters)
         return await get_many_by_query(query, options)
 
-    async def get_user_available_chat_messages(
-            self, user_id: int, chat_id: int, _options: GetManyOptions = None) -> list[models.Message]:
-        query = (self._select.
-                 where(self.model.chat_id == chat_id).
-                 where(self.model.created_at >= models.ChatUser.joined_at).
-                 distinct(self.model.id).
-                 join(models.ChatUser, models.ChatUser.user_id == user_id))
+    async def get_messages_since_datetime(
+            self, period_start: datetime, chat_id: int, _options: GetManyOptions = None) -> list[models.Message]:
+        query = (select(self.model)
+                 .join(models.User)
+                 .where(self.model.chat_id == chat_id)
+                 .where(self.model.created_at >= period_start))
         return await get_many_by_query(query, options=_options)
 
 

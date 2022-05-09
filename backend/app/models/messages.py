@@ -13,4 +13,4 @@ class Message(ModelInDB):
     chat_id = Column(Integer, ForeignKey('chat.id', ondelete="CASCADE"))
     body = Column(Text, default="")
     created_at = Column(DateTime, index=True, default=datetime.now)
-    user = relationship("User", backref="messages")
+    user = relationship("User", backref="messages", lazy=False)

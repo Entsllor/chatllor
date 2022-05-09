@@ -24,8 +24,8 @@ async def user_read_chat_messages(user_id: int, chat_id: int) -> list[models.Mes
     chat_user = await crud.ChatUsers.get_one(user_id=user_id, chat_id=chat_id)
     if not chat_user:
         raise exceptions.Forbidden
-    return await crud.Messages.get_user_available_chat_messages(
-        user_id=user_id,
+    return await crud.Messages.get_messages_since_datetime(
+        period_start=chat_user.joined_at,
         chat_id=chat_id,
         _options=GetManyOptions(ordering_fields=["created_at"])
     )

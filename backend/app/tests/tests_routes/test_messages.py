@@ -71,9 +71,14 @@ async def test_read_messages(client, urls, auth_header, chat_with_default_user, 
     await chats.add_user_to_chat(second_user.id, chat_with_default_user.id)
     await Messages.create(default_user.id, "__test_read_messages_1", chat_id=chat_with_default_user.id)
     await Messages.create(second_user.id, "__test_read_messages_2", chat_id=chat_with_default_user.id)
-    response = await client.get(url=urls.user_read_chat_messages(chat_id=chat_with_default_user.id), headers=auth_header)
-    db_messages = [schemas.messages.MessageOut.from_orm(msg).dict(by_alias=True)
-                   for msg in await Messages.get_all(chat_id=chat_with_default_user.id)]
+    response = await client.get(url=urls.read_messages(chat_id=chat_with_default_user.id), headers=auth_header)
+    assert [schemas.messages.UserMessage.validate(message) for message in response.json()]  # response validation
     assert response.status_code == status.HTTP_200_OK
-    assert len(db_messages) == 2
-    assert response.json() == db_messages
+
+
+@pytest.mark.asyncio
+async def test_failed_read_messages_user_not_in_chat(client, urls, auth_header, empty_chat, second_user, default_user):
+    await chats.add_user_to_chat(second_user.id, empty_chat.id)
+    await Messages.create(second_user.id, "__test_messages_1", chat_id=empty_chat.id)
+    response = await client.get(url=urls.read_messages(chat_id=empty_chat.id), headers=auth_header)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
