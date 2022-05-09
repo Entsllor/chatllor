@@ -3,4 +3,8 @@ export interface Message {
   userId: number;
   body: string;
   createdAt: Date;
+  user: {
+    username: string;
+    id: number
+  };
 }

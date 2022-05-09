@@ -16,7 +16,7 @@ const MessagesField: React.FC<{ chatId: number }> = (props) => {
           .map((message) => (
             <div key={message.id} className="card card-body">
               <div className='col col-4 d-flex w-100 flex-row flex-wrap justify-content-between'>
-                <div>User ID: {message.userId}</div>
+                <div>{message.user.username}</div>
                 <div>{(new Date(message.createdAt)).toLocaleString()}</div>
               </div>
               <hr/>
