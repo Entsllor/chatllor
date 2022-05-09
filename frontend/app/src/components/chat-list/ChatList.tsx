@@ -2,16 +2,12 @@ import React, {useEffect, useState} from "react";
 import {Chat, ChatUser} from "../../interfaces/chat";
 import ChatService from "../../services/chat";
 
-const ChatList: React.FC<{handleCurrentChat: CallableFunction}> = (props) => {
-  const [userChats, setUserChats] = useState<ChatUser[]>([])
+const ChatList: React.FC<{handleCurrentChat: CallableFunction, userChats: ChatUser[]}> = (props) => {
 
-  useEffect(() => {
-    ChatService.fetchUserChats().then(response => setUserChats(response.data))
-  }, [])
   return (
     <div className='ChatList'>
       <div className="d-flex flex-column gap-1">
-        {userChats.map((UserChat) =>
+        {props.userChats.map((UserChat) =>
           <div key={UserChat.chat.id}>
             <button
               className='btn btn-success border-0 w-100'
