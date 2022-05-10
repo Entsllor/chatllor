@@ -8,17 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession, AsyncConnection, AsyncEngine
 # use only testing settings
 os.environ.setdefault("APP_MODE", "test")  # noqa
 
-from app import models
+from app import models, crud
 from app.core.database import create_db_engine, Base, db_context
 from app.core.settings import test_settings
-from app.crud import Users, Chats, ChatUsers, AccessTokens, RefreshTokens
 from app.main import create_app
 from app.schemas import users, tokens
 
 DEFAULT_USER_PASS = "SomeUserPassword"
 DEFAULT_USER_EMAIL = "defaultUser@example.com"
 DEFAULT_USER_NAME = "SomeUserName"
-AUTH_BEARER = "Authorization: Bearer {}"
 USER_CREATE_DATA = users.UserCreate(username=DEFAULT_USER_NAME, password=DEFAULT_USER_PASS, email=DEFAULT_USER_EMAIL)
 
 
@@ -71,31 +69,32 @@ async def app():
 
 @pytest.fixture(scope="function")
 async def default_user(db) -> models.User:
-    yield await Users.create(**USER_CREATE_DATA.dict())
+    yield await crud.Users.create(**USER_CREATE_DATA.dict())
 
 
 @pytest.fixture(scope="function")
 async def second_user(db) -> models.User:
-    yield await Users.create(**USER_CREATE_DATA.dict() | {'username': "SECOND_USER", 'email': "second@example.com"})
+    second_user_data = USER_CREATE_DATA.dict() | {'username': "SECOND_USER", 'email': "second@example.com"}
+    yield await crud.Users.create(**second_user_data)
 
 
 @pytest.fixture
 async def empty_chat(db) -> models.Chat:
-    yield await Chats.create(name="EMPTY_CHAT")
+    yield await crud.Chats.create(name="EMPTY_CHAT")
 
 
 @pytest.fixture
 async def chat_with_default_user(empty_chat, default_user) -> models.Chat:
-    await ChatUsers.create(user_id=default_user.id, chat_id=empty_chat.id)
+    await crud.ChatUsers.create(user_id=default_user.id, chat_id=empty_chat.id)
     yield empty_chat  # now not empty
 
 
 @pytest.fixture
 async def access_token(default_user) -> models.AccessToken:
-    yield await AccessTokens.create(user_id=default_user.id)
+    yield await crud.AccessTokens.create(user_id=default_user.id)
 
 
 @pytest.fixture
 async def token_pair(default_user, access_token) -> tokens.AuthTokensBodies:
-    refresh_token = await RefreshTokens.create(user_id=default_user.id)
+    refresh_token = await crud.RefreshTokens.create(user_id=default_user.id)
     yield tokens.AuthTokensBodies(access_token=access_token.body, refresh_token=refresh_token.body)
