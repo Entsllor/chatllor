@@ -1,8 +1,7 @@
-import React, {useEffect, useState} from "react";
-import {Chat, ChatUser} from "../../interfaces/chat";
-import ChatService from "../../services/chat";
+import React from "react";
+import {ChatUser} from "../../interfaces/chat";
 
-const ChatList: React.FC<{handleCurrentChat: CallableFunction, userChats: ChatUser[]}> = (props) => {
+const ChatList: React.FC<{ handleCurrentChat: CallableFunction, userChats: ChatUser[] }> = (props) => {
 
   return (
     <div className='ChatList'>
@@ -16,6 +15,10 @@ const ChatList: React.FC<{handleCurrentChat: CallableFunction, userChats: ChatUs
             </button>
           </div>
         )}
+        <button className='btn btn-secondary border-0 w-100'
+                onClick={() => props.handleCurrentChat()}>
+          +
+        </button>
       </div>
     </div>
   )

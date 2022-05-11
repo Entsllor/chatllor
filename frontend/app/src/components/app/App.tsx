@@ -6,6 +6,7 @@ import {Chat, ChatUser} from "../../interfaces/chat";
 import MessagesField from "../messages-field/MessagesField";
 import ChatHeader from "../chat-header/ChatHeader";
 import ChatService from "../../services/chat";
+import ChatSearch from "../chat-search/ChatSearch";
 
 const App = () => {
   const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'))
@@ -33,10 +34,12 @@ const App = () => {
               <ChatList userChats={userChats} handleCurrentChat={setCurrentChat}/>
             </div>
             <div className='col col-8'>
-              {currentChat && <div>
+              {currentChat? <div>
                 <ChatHeader chatsUpdater={updateUserChats} chat={currentChat} currentChatHandler={setCurrentChat}/>
                 <MessagesField chatId={currentChat.id}/>
               </div>
+                :
+                <ChatSearch/>
               }
             </div>
           </div>
