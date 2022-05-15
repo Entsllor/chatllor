@@ -19,7 +19,7 @@ const ChatSearch: React.FC<{}> = (props) => {
       (chat) => chat.name.toLowerCase().includes(nameFilter.toLowerCase())
     )
     setFilteredChats(newFilteredChats)
-  }, [nameFilter]);
+  }, [chats, nameFilter]);
 
   return (
     <div className='ChatSearch'>
