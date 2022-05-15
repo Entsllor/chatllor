@@ -7,6 +7,7 @@ import MessagesField from "../messages-field/MessagesField";
 import ChatHeader from "../chat-header/ChatHeader";
 import ChatService from "../../services/chat";
 import ChatSearch from "../chat-search/ChatSearch";
+import ChatCreationForm from "../chat-creation-form/ChatCreationForm";
 
 const App = () => {
   const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'))
@@ -39,7 +40,10 @@ const App = () => {
                 <MessagesField chatId={currentChat.id}/>
               </div>
                 :
-                <ChatSearch/>
+                <div>
+                  <ChatCreationForm updateChats={updateUserChats}/>
+                  <ChatSearch/>
+                </div>
               }
             </div>
           </div>

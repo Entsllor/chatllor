@@ -11,6 +11,9 @@ export default class ChatService {
     return api.get('chats/')
   }
 
+  static async createChat(chatName: string): Promise<AxiosResponse<Chat[]>> {
+    return api.post('chats/', {name: chatName})
+  }
 
   static async leaveChat(chatId: number): Promise<AxiosResponse<void>> {
     return api.delete(`/chats/${chatId}/users/`)
